@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join Snowmentum</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--green:#00d084;--blue:#0058fa;--amber:#e8c84a;--navy:#000c24}
+body{background:var(--navy);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;padding:24px 16px}
+body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse at 20% 50%,rgba(0,88,250,.08) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(0,208,132,.06) 0%,transparent 50%);pointer-events:none}
+.card{position:relative;z-index:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:40px 36px;width:100%;max-width:440px;box-shadow:0 24px 64px rgba(0,0,0,.5)}
+.logo{text-align:center;margin-bottom:24px}
+.logo img{height:44px;filter:brightness(0) invert(1)}
+.logo-fallback{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:5px;color:#fff;display:none}
+.party-name{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:#fff;text-align:center;margin-bottom:4px}
+.party-meta{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4);text-align:center;margin-bottom:20px}
+.kw-badge{font-family:'DM Mono',monospace;font-size:11px;color:var(--amber);background:rgba(232,200,74,.1);border:1px solid rgba(232,200,74,.3);border-radius:20px;padding:4px 14px;letter-spacing:1.5px;display:block;width:fit-content;margin:0 auto 24px}
+label{display:block;font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
+.fg{margin-bottom:16px}
+input{width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 16px;font-family:'DM Sans',sans-serif;font-size:15px;color:#fff;outline:none;transition:border-color .15s}
+input::placeholder{color:rgba(255,255,255,.25)}
+input:focus{border-color:var(--blue);background:rgba(255,255,255,.09)}
+.btn{width:100%;margin-top:8px;background:var(--green);border:none;border-radius:12px;padding:15px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;color:#fff;cursor:pointer;transition:all .15s}
+.btn:hover{background:#00e896;transform:translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:default;transform:none}
+.note{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.3);text-align:center;margin-top:14px;line-height:1.7}
+.err{background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.3);border-radius:8px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:11px;color:#ff8888;margin-bottom:14px;display:none}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+/* success */
+.sc{display:none;text-align:center}
+.sc-icon{font-size:52px;margin-bottom:14px}
+.sc-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--green);margin-bottom:8px}
+.sc-msg{font-size:14px;color:rgba(255,255,255,.6);line-height:1.6;margin-bottom:20px}
+.passport-box{background:rgba(0,208,132,.08);border:1px solid rgba(0,208,132,.25);border-radius:12px;padding:16px 20px;margin:12px 0;text-align:left}
+.pb-lbl{font-family:'DM Mono',monospace;font-size:9px;color:rgba(0,208,132,.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.pb-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:#fff;margin-bottom:4px}
+.pb-desc{font-size:13px;color:rgba(255,255,255,.5);line-height:1.5}
+.pb-link{display:inline-block;margin-top:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--blue);text-decoration:none}
+.cdown{background:rgba(232,200,74,.08);border:1px solid rgba(232,200,74,.2);border-radius:10px;padding:12px 16px;margin:12px 0;text-align:center;display:none}
+.cd-lbl{font-family:'DM Mono',monospace;font-size:9px;color:rgba(232,200,74,.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.cd-time{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--amber)}
+/* not found */
+.nf{text-align:center;display:none}
+.nf-icon{font-size:48px;margin-bottom:12px}
+.nf-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-bottom:8px}
+.nf-msg{font-size:13px;color:rgba(255,255,255,.3);line-height:1.6}
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- Loading -->
+  <div id="s-load" style="text-align:center;padding:40px 0">
+    <div class="spin" style="width:28px;height:28px;border-width:3px;margin:0 auto 14px;display:block"></div>
+    <div style="font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,.4)">Finding your party…</div>
+  </div>
+
+  <!-- Not found -->
+  <div id="s-nf" class="nf">
+    <div class="nf-icon">❄️</div>
+    <div class="nf-title">Party Not Found</div>
+    <div class="nf-msg">The keyword "<span id="nf-kw"></span>" didn't match any active party.<br>Check with your host for the correct link.</div>
+  </div>
+
+  <!-- Form -->
+  <div id="s-form" style="display:none">
+    <div class="logo">
+      <img src="https://images.squarespace-cdn.com/content/v1/5ced9b9909e97f0001588c2f/27147d47-bb78-4e22-8dea-9d8499160ec5/Snowmentum+logo.png?format=300w" onerror="this.style.display='none';document.querySelector('.logo-fallback').style.display='block'">
+      <div class="logo-fallback">SNOWMENTUM</div>
+    </div>
+    <div class="party-name" id="f-name">—</div>
+    <div class="party-meta" id="f-meta"></div>
+    <div class="kw-badge" id="f-kw">SNOWBALL</div>
+    <div class="err" id="f-err"></div>
+    <div class="fg"><label>Your Name</label><input id="i-name" type="text" placeholder="First and last name" autocomplete="name"></div>
+    <div class="fg"><label>Phone <span style="color:rgba(255,255,255,.2);font-size:9px">— for SMS stop updates</span></label><input id="i-phone" type="tel" placeholder="312-555-0101" autocomplete="tel"></div>
+    <button class="btn" id="btn-join" onclick="doJoin()">❄️ Join the Party</button>
+    <div class="note">You'll get a confirmation text with your stop details when the party kicks off.<br>Text the keyword above when you arrive at your first stop.</div>
+  </div>
+
+  <!-- Success -->
+  <div id="s-ok" class="sc">
+    <div class="sc-icon">🎉</div>
+    <div class="sc-title">You're In!</div>
+    <div class="sc-msg">Welcome to <strong id="ok-party" style="color:#fff"></strong>.<br>Stop details incoming when the party starts.</div>
+    <div id="ok-passport" class="passport-box" style="display:none">
+      <div class="pb-lbl">Your Snowmentum Identity</div>
+      <div class="pb-name" id="ok-pname"></div>
+      <div class="pb-desc" id="ok-pdesc"></div>
+      <a id="ok-plink" href="#" target="_blank" class="pb-link">Learn more →</a>
+    </div>
+    <div id="ok-cdown" class="cdown"><div class="cd-lbl">Party starts in</div><div class="cd-time" id="ok-time">--:--:--</div></div>
+    <div class="note">📱 Confirmation sent to <span id="ok-phone"></span><br>Text <strong id="ok-kw" style="color:var(--amber)"></strong> when you arrive at your first stop</div>
+  </div>
+
+  <!-- Already registered -->
+  <div id="s-dup" class="sc">
+    <div class="sc-icon">✅</div>
+    <div class="sc-title">Already Registered!</div>
+    <div class="sc-msg">You're already signed up for <strong id="dup-party" style="color:#fff"></strong>. See you there!</div>
+    <div class="note">Text <strong id="dup-kw" style="color:var(--amber)"></strong> when you arrive at your first stop.</div>
+  </div>
+
+</div>
+<script>
+let _party=null, _cdInt=null;
+
+function show(id){['s-load','s-nf','s-form','s-ok','s-dup'].forEach(s=>document.getElementById(s).style.display=s===id?'block':'none');}
+
+function fmtDate(iso){if(!iso)return'';try{return new Date(iso).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});}catch{return iso;}}
+
+function startCD(iso){
+  const t=new Date(iso).getTime();
+  if(isNaN(t)||t<Date.now())return;
+  document.getElementById('ok-cdown').style.display='block';
+  _cdInt=setInterval(()=>{
+    const d=t-Date.now();
+    if(d<=0){document.getElementById('ok-time').textContent='Starting now!';clearInterval(_cdInt);return;}
+    const h=Math.floor(d/3600000),m=Math.floor((d%3600000)/60000),s=Math.floor((d%60000)/1000);
+    document.getElementById('ok-time').textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  },1000);
+}
+
+function getKw(){
+  const p=location.pathname.split('/').filter(Boolean);
+  const j=p.indexOf('join');
+  if(j>=0&&p[j+1])return p[j+1].toUpperCase();
+  return new URLSearchParams(location.search).get('keyword')?.toUpperCase()||'';
+}
+
+async function init(){
+  const kw=getKw();
+  if(!kw){document.getElementById('nf-kw').textContent='(none)';show('s-nf');return;}
+  try{
+    const r=await fetch('/api/signup?keyword='+encodeURIComponent(kw));
+    const d=await r.json();
+    if(!r.ok||d.error){document.getElementById('nf-kw').textContent=kw;show('s-nf');return;}
+    _party=d;
+    document.getElementById('f-name').textContent=d.name;
+    document.getElementById('f-meta').textContent=[d.city,fmtDate(d.start_time)].filter(Boolean).join(' · ');
+    document.getElementById('f-kw').textContent=d.keyword||kw;
+    show('s-form');
+  }catch{document.getElementById('nf-kw').textContent=kw;show('s-nf');}
+}
+
+async function doJoin(){
+  const errEl=document.getElementById('f-err');
+  errEl.style.display='none';
+  const name=document.getElementById('i-name').value.trim();
+  const phone=document.getElementById('i-phone').value.trim();
+  const kw=getKw();
+  if(!name){errEl.textContent='Please enter your name';errEl.style.display='block';return;}
+  const btn=document.getElementById('btn-join');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Joining…';
+  try{
+    const r=await fetch('/api/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,phone,keyword:kw})});
+    const d=await r.json();
+    if(!r.ok){errEl.textContent=d.error||'Something went wrong';errEl.style.display='block';btn.disabled=false;btn.textContent='❄️ Join the Party';return;}
+    if(d.alreadyRegistered){
+      document.getElementById('dup-party').textContent=d.party.name;
+      document.getElementById('dup-kw').textContent=d.party.keyword||kw;
+      show('s-dup');return;
+    }
+    document.getElementById('ok-party').textContent=d.party.name;
+    document.getElementById('ok-kw').textContent=d.party.keyword||kw;
+    document.getElementById('ok-phone').textContent=phone||'your phone';
+    if(d.passport){
+      document.getElementById('ok-pname').textContent=d.passport.name;
+      document.getElementById('ok-pdesc').textContent=d.passport.description||'';
+      const lnk=document.getElementById('ok-plink');
+      if(d.passport.url){lnk.href=d.passport.url;lnk.style.display='inline';}else lnk.style.display='none';
+      document.getElementById('ok-passport').style.display='block';
+    }
+    if(d.party.start_time)startCD(d.party.start_time);
+    show('s-ok');
+  }catch{errEl.textContent='Connection error — try again';errEl.style.display='block';btn.disabled=false;btn.textContent='❄️ Join the Party';}
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('s-form').style.display!=='none')doJoin();});
+init();
+</script>
+</body>
+</html>

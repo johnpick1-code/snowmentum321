@@ -1,0 +1,3992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snowmentum Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #000c24; --surface: #0a1628; --border: rgba(255,255,255,.1);
+    --blue: #0058fa; --blue-light: #4d8cff; --green: #00d084;
+    --amber: #ffb800; --red: #ff4444; --text: #fff; --muted: rgba(255,255,255,.45);
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+
+  /* LOGIN */
+  #login-screen {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; flex-direction: column; gap: 24px;
+  }
+  .login-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 40px; width: 340px; text-align: center;
+  }
+  .login-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 3px; margin-bottom: 8px; }
+  .login-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+  .login-input {
+    width: 100%; background: rgba(255,255,255,.07); border: 1.5px solid var(--border);
+    border-radius: 8px; padding: 12px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: #fff; outline: none; margin-bottom: 12px;
+  }
+  .login-input:focus { border-color: var(--blue-light); }
+  .login-btn {
+    width: 100%; background: var(--blue); border: none; color: #fff;
+    border-radius: 8px; padding: 12px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .login-err { color: var(--red); font-size: 12px; margin-top: 8px; display: none; }
+
+  /* MAIN */
+  #main-screen { display: none; }
+  .topbar {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 24px; display: flex; align-items: center; gap: 16px; height: 56px;
+  }
+  .topbar-logo { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 3px; color: #fff; }
+  .topbar-badge {
+    font-family: 'DM Mono', monospace; font-size: 10px; color: var(--amber);
+    border: 1px solid rgba(255,184,0,.3); padding: 2px 10px; border-radius: 20px; letter-spacing: 1px;
+  }
+  .topbar-right { margin-left: auto; display: flex; gap: 12px; align-items: center; }
+  .topbar-logout {
+    font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted);
+    cursor: pointer; background: none; border: none;
+  }
+  .topbar-logout:hover { color: #fff; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 2px; padding: 16px 24px 0; border-bottom: 1px solid var(--border); background: var(--surface); }
+  .tab {
+    font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px;
+    text-transform: uppercase; padding: 8px 20px; cursor: pointer;
+    border-radius: 8px 8px 0 0; border: 1px solid transparent;
+    border-bottom: none; color: var(--muted); background: none;
+    transition: all .15s;
+  }
+  .tab.active { background: var(--bg); border-color: var(--border); color: #fff; }
+
+  /* CONTENT */
+  .content { padding: 24px; max-width: 1100px; margin: 0 auto; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* STATS ROW */
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px;
+  }
+  .stat-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 8px; }
+  .stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 2px; }
+
+  /* TABLE */
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--muted); padding: 12px 16px;
+    text-align: left; border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,.03);
+  }
+  td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,.05); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.03); }
+  .badge {
+    font-family: 'DM Mono', monospace; font-size: 10px; padding: 2px 8px;
+    border-radius: 10px; display: inline-block;
+  }
+  .badge-blue { background: rgba(0,88,250,.2); color: var(--blue-light); }
+  .badge-green { background: rgba(0,208,132,.15); color: var(--green); }
+  .badge-amber { background: rgba(255,184,0,.15); color: var(--amber); }
+
+  /* SECTION HEADER */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px; }
+
+  /* SAVE PARTY BUTTON */
+  .save-party-btn {
+    background: var(--green); border: none; color: #000; border-radius: 8px;
+    padding: 8px 18px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+    font-weight: 600; cursor: pointer;
+  }
+  .save-party-btn:hover { opacity: .9; }
+
+  /* EMPTY */
+  .empty { padding: 48px; text-align: center; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 12px; }
+
+  /* PARTY DETAIL */
+  .party-row { cursor: pointer; }
+  .expand-row { display: none; }
+  .expand-row.open { display: table-row; }
+  .expand-cell { padding: 0 !important; }
+  .expand-inner { padding: 16px; background: rgba(0,88,250,.05); border-top: 1px solid var(--border); }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--green); color: #000; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 600; padding: 10px 24px; border-radius: 20px;
+    opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 999;
+  }
+  .toast.show { opacity: 1; }
+  .toast.err { background: var(--red); color: #fff; }
+
+  .search-input {
+    background: rgba(255,255,255,.07); border: 1.5px solid var(--border);
+    border-radius: 8px; padding: 8px 12px; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; color: #fff; outline: none; width: 240px;
+  }
+  .search-input:focus { border-color: var(--blue-light); }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-title">❄ Snowmentum</div>
+    <div class="login-sub">Admin Dashboard</div>
+    <input class="login-input" type="password" id="pw-input" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-err" id="login-err">Incorrect password</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main-screen">
+  <div class="topbar">
+    <span class="topbar-logo">❄ Snowmentum</span>
+    <span class="topbar-badge">ADMIN</span>
+    <div class="topbar-right">
+      <a href="/events" target="_blank" style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.5);letter-spacing:1px;border:1px solid rgba(255,255,255,.15);padding:5px 12px;border-radius:5px;text-decoration:none;transition:all .15s" onmouseover="this.style.color='#fff';this.style.borderColor='#e8c84a'" onmouseout="this.style.color='rgba(255,255,255,.5)';this.style.borderColor='rgba(255,255,255,.15)'">🎟 Party Listing ↗</a>
+      <a href="/" target="_blank" style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.5);letter-spacing:1px;border:1px solid rgba(255,255,255,.15);padding:5px 12px;border-radius:5px;text-decoration:none;transition:all .15s" onmouseover="this.style.color='#fff';this.style.borderColor='#7bc4f7'" onmouseout="this.style.color='rgba(255,255,255,.5)';this.style.borderColor='rgba(255,255,255,.15)'">❄ Bracket ↗</a>
+      <span id="topbar-greeting" style="font-size:13px;color:var(--muted)"></span>
+      <button class="topbar-logout" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-parties" onclick="switchTab('parties')">Parties</button>
+    <button class="tab" id="tab-snowballers" onclick="switchTab('snowballers')">Snowballers</button>
+    <button class="tab" id="tab-activities" onclick="switchTab('activities')">Activities</button>
+    <button class="tab" id="tab-passports" onclick="switchTab('passports')">Passports</button>
+    <button class="tab" id="tab-templates" onclick="switchTab('templates')">🗂 Templates</button>
+    <button class="tab" id="tab-plan" onclick="switchTab('plan')">📋 Plan Party</button>
+  </div>
+
+  <div class="content">
+
+    <!-- PARTIES VIEW -->
+    <div class="view active" id="view-parties">
+      <div class="stats-row" id="party-stats"></div>
+      <div class="section-header">
+        <span class="section-title">All Parties</span>
+        <button class="save-party-btn" onclick="saveCurrentParty()">⬆ Save Current Party</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Party</th>
+              <th>City</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Size</th>
+              <th>Snowballers</th>
+            </tr>
+          </thead>
+          <tbody id="parties-tbody">
+            <tr><td colspan="6"><div class="empty">Loading...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SNOWBALLERS VIEW -->
+    <div class="view" id="view-snowballers">
+      <div class="stats-row" id="sb-stats"></div>
+      <div class="section-header">
+        <span class="section-title">All Snowballers</span>
+        <input class="search-input" id="sb-search" placeholder="Search name or phone..." oninput="filterSnowballers()">
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Parties</th>
+              <th>Last Seen</th>
+              <th>Party History</th>
+            </tr>
+          </thead>
+          <tbody id="sb-tbody">
+            <tr><td colspan="5"><div class="empty">Loading...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+    <!-- ACTIVITIES VIEW -->
+    <div class="view" id="view-activities">
+      <div class="section-header">
+        <span class="section-title">Activities Bible</span>
+        <button class="save-party-btn" onclick="showAddActivity()" style="background:var(--blue)">+ Add Activity</button>
+      </div>
+
+      <!-- Add/Edit form -->
+      <div id="activity-form" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;margin-bottom:16px" id="activity-form-title">Add Activity</div>
+        <input type="hidden" id="af-id">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div>
+            <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:5px">NAME *</div>
+            <input id="af-name" placeholder="Activity name" style="width:100%;background:rgba(255,255,255,.07);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:#fff;outline:none">
+          </div>
+          <div>
+            <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:5px">CATEGORY *</div>
+            <select id="af-category" style="width:100%;background:rgba(255,255,255,.07);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:#fff;outline:none">
+              <option value="Creative">Creative</option>
+              <option value="Deep">Deep</option>
+              <option value="Games">Games</option>
+              <option value="Music">Music</option>
+              <option value="Physical">Physical</option>
+              <option value="Social" selected>Social</option>
+              <option value="Storytelling">Storytelling</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:5px">DESCRIPTION (optional)</div>
+          <input id="af-desc" placeholder="Brief description..." style="width:100%;background:rgba(255,255,255,.07);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:#fff;outline:none">
+        </div>
+        <div style="margin-bottom:16px">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:5px">LINK (optional — e.g. snowmentum.org/activity)</div>
+          <input id="af-url" type="url" placeholder="https://..." style="width:100%;background:rgba(255,255,255,.07);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-family:'DM Mono',monospace;font-size:11px;color:#fff;outline:none">
+        </div>
+        <div style="display:flex;gap:10px">
+          <button onclick="saveActivity()" style="background:var(--blue);border:none;color:#fff;border-radius:8px;padding:10px 20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer">Save Activity</button>
+          <button onclick="document.getElementById('activity-form').style.display='none'" style="background:rgba(255,255,255,.08);border:none;color:var(--muted);border-radius:8px;padding:10px 20px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Filter by category -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" id="cat-filters"></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Activity</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th>Link</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="activities-tbody">
+            <tr><td colspan="5"><div class="empty">Loading...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+    <!-- PASSPORTS VIEW -->
+    <div class="view" id="view-mega" style="padding:24px">
+    <div class="section-header">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px">⚡ Mega Events</h2>
+      <button class="save-party-btn" onclick="showCreateMega()">+ Create Mega Event</button>
+    </div>
+
+    <!-- Create form -->
+    <div id="mega-create-form" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px">New Mega Event</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div>
+          <label style="font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:1px;display:block;margin-bottom:4px">EVENT NAME</label>
+          <input id="mega-name" type="text" placeholder="WEHO Summer 2026" style="width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;padding:9px 12px;color:#fff;font-size:13px;outline:none">
+        </div>
+        <div>
+          <label style="font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:1px;display:block;margin-bottom:4px">MASTER KEYWORD</label>
+          <input id="mega-keyword" type="text" placeholder="WEHO2026" style="width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;padding:9px 12px;color:#fff;font-size:13px;outline:none;font-family:'DM Mono',monospace">
+        </div>
+      </div>
+      <div>
+        <label style="font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:1px;display:block;margin-bottom:8px">SELECT BRACKETS (round-robin assignment)</label>
+        <div id="mega-bracket-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="saveMegaEvent()" style="background:var(--green);color:#fff;border:none;border-radius:7px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer">Create Mega Event</button>
+        <button onclick="document.getElementById('mega-create-form').style.display='none'" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);border:1px solid var(--border);border-radius:7px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer">Cancel</button>
+      </div>
+    </div>
+
+    <div id="mega-list" style="display:grid;gap:12px"></div>
+  </div>
+
+<div class="view" id="view-passports">
+      <div class="section-header">
+        <span class="section-title">Passport Directory</span>
+        <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)" id="passport-count"></span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Identity</th><th>Passport Link</th><th>Times Assigned</th></tr>
+          </thead>
+          <tbody id="passports-tbody">
+            <tr><td colspan="4"><div class="empty">Loading...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TEMPLATES VIEW -->
+    <div class="view" id="view-templates" style="display:none;padding:24px">
+      <div class="section-header">
+        <h2 style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:18px">🗂 LA Brackets — Templates</h2>
+        <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">Click any template to load into Plan Party</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:16px" id="templates-grid"></div>
+    </div>
+
+    <!-- PLAN PARTY VIEW -->
+    <div class="view" id="view-plan" style="max-width:900px">
+      <div class="section-header" style="justify-content:space-between">
+        <span class="section-title">📋 Plan a Party</span>
+        <div style="display:flex;gap:8px">
+          <button onclick="planSaveDraft()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:7px;padding:7px 16px;font-size:12px;cursor:pointer">Save Draft</button>
+          <button onclick="planPublish()" style="background:#00d084;border:none;color:#fff;border-radius:7px;padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer">🚀 Publish Party</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+
+        <!-- Date/time + keyword -->
+        <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px">
+          <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:1px;margin-bottom:12px">PARTY DETAILS</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div>
+              <label style="font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:1px;display:block;margin-bottom:4px">PARTY NAME</label>
+              <input id="plan-name" placeholder="Summer Snowmentum 2026" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:9px 12px;color:#fff;font-size:13px;outline:none">
+            </div>
+            <div>
+              <label style="font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:1px;display:block;margin-bottom:4px">CITY</label>
+              <input id="plan-city" placeholder="Chicago, IL" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:9px 12px;color:#fff;font-size:13px;outline:none">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div>
+                <label style="font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:1px;display:block;margin-bottom:4px">DATE & TIME</label>
+                <input id="plan-datetime" type="datetime-local" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:9px 12px;color:#fff;font-size:13px;outline:none">
+              </div>
+              <div>
+                <label style="font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:1px;display:block;margin-bottom:4px">KEYWORD</label>
+                <input id="plan-keyword" placeholder="SNOWBALL" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:9px 12px;color:#e8c84a;font-size:13px;font-family:'DM Mono',monospace;outline:none;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+              </div>
+            </div>
+            <div>
+              <label style="font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:1px;display:block;margin-bottom:4px">PARTY SIZE</label>
+              <select id="plan-size" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:9px 12px;color:#fff;font-size:13px;outline:none">
+                <option value="8">8 people</option>
+                <option value="16" selected>16 people</option>
+                <option value="32">32 people</option>
+                <option value="64">64 people</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Flyer upload -->
+          <div style="margin-top:16px">
+            <label style="font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:1px;display:block;margin-bottom:6px">PARTY FLYER</label>
+            <div style="display:flex;align-items:center;gap:12px">
+              <label id="plan-flyer-btn" style="background:rgba(232,200,74,.1);border:1px solid rgba(232,200,74,.3);color:#e8c84a;border-radius:7px;padding:8px 16px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.5px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span id="plan-flyer-label">Upload Flyer</span>
+                <input type="file" accept="image/*" style="display:none" onchange="uploadPlanFlyer(this)">
+              </label>
+              <img id="plan-flyer-preview" src="" style="display:none;height:48px;width:auto;border-radius:5px;object-fit:cover;border:1px solid rgba(255,255,255,.15)">
+            </div>
+          </div>
+        </div>
+
+        <!-- SMS auto-send schedule -->
+        <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px">
+          <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:1px;margin-bottom:12px">SMS AUTO-SEND SCHEDULE</div>
+          <div style="display:flex;flex-direction:column;gap:8px" id="plan-sms-schedule">
+            <div style="font-size:11px;font-family:'DM Mono',monospace;color:rgba(255,255,255,.3)">Set a party date/time first</div>
+          </div>
+          <button onclick="planAddSmsSlot()" style="margin-top:10px;background:rgba(0,88,250,.15);border:1px solid rgba(0,88,250,.3);color:#7bc4f7;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;width:100%">+ Add SMS Blast</button>
+        </div>
+      </div>
+
+      <!-- Invite list -->
+      <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:1px">INVITE LIST</div>
+          <span id="plan-invite-count" style="font-size:11px;font-family:'DM Mono',monospace;color:rgba(255,255,255,.3)">0 invited</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <input id="plan-invite-name" placeholder="Name" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:8px 12px;color:#fff;font-size:13px;outline:none">
+          <div style="display:flex;gap:6px">
+            <input id="plan-invite-phone" placeholder="312-555-0101" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:8px 12px;color:#fff;font-size:13px;outline:none">
+            <button onclick="planAddInvitee()" style="background:var(--blue,#0058fa);border:none;color:#fff;border-radius:7px;padding:8px 14px;font-size:13px;cursor:pointer">+</button>
+          </div>
+        </div>
+        <div style="margin-bottom:8px">
+          <textarea id="plan-invite-paste" placeholder="Or paste a list: Name, Phone (one per line)" rows="3" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:8px 12px;color:#fff;font-size:12px;font-family:'DM Mono',monospace;outline:none;resize:vertical"></textarea>
+          <button onclick="planPasteInvitees()" style="margin-top:4px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.6);border-radius:6px;padding:5px 14px;font-size:11px;cursor:pointer">Parse & Add</button>
+        </div>
+        <div id="plan-invite-list" style="display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto"></div>
+        <button onclick="planSendAllInvites()" id="plan-send-invites-btn" style="display:none;margin-top:10px;background:rgba(0,208,132,.15);border:1px solid rgba(0,208,132,.35);color:#00d084;border-radius:7px;padding:8px 18px;font-size:13px;font-weight:500;cursor:pointer;width:100%">📱 Send Invite SMS to All</button>
+      </div>
+
+      <!-- Pre-built stops -->
+      <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px">
+        <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:1px;margin-bottom:4px">PRE-BUILT STOPS & ACTIVITIES</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.3);margin-bottom:12px">These will be pre-loaded when this party goes live</div>
+        <div id="plan-stops-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px"></div>
+        <button onclick="planRenderStops()" style="margin-top:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);border-radius:6px;padding:6px 14px;font-size:11px;cursor:pointer">↺ Refresh from Party Size</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let adminToken = localStorage.getItem('snow_admin_token') || '';
+let allParties = [];
+let allSnowballers = [];
+
+// ── AUTH ──────────────────────────────────────────────────────────────
+async function doLogin() {
+  const pw = document.getElementById('pw-input').value.trim();
+  if (!pw) return;
+  // Show loading state immediately
+  document.getElementById('login-btn').textContent = 'Checking...';
+  document.getElementById('login-btn').disabled = true;
+  const res = await fetch('/api/admin-auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: pw }),
+  });
+  const data = await res.json();
+  if (data.success) {
+    adminToken = data.token;
+    localStorage.setItem('snow_admin_token', adminToken);
+    showMain();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+    document.getElementById('login-btn').textContent = 'Sign In';
+    document.getElementById('login-btn').disabled = false;
+  }
+}
+
+function doLogout() {
+  adminToken = '';
+  localStorage.removeItem('snow_admin_token');
+  document.getElementById('main-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+function showMain() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('main-screen').style.display = 'block';
+  // Load both in parallel for faster initial render
+  Promise.all([loadParties(), loadSnowballers()]);
+}
+
+// Auto-login if token exists — verify it first
+async function tryAutoLogin() {
+  if (!adminToken) return;
+  const res = await fetch('/api/get-parties', { headers: { 'x-admin-token': adminToken } });
+  if (res.ok) {
+    showMain();
+  } else {
+    // Token invalid — clear it and show login
+    adminToken = '';
+    localStorage.removeItem('snow_admin_token');
+  }
+}
+tryAutoLogin();
+
+// ── TABS ──────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('view-' + tab).classList.add('active');
+  if (tab === 'activities' && !allActivities.length) loadActivities();
+  if (tab === 'passports') loadPassportsAdmin();
+  if (tab === 'mega') loadMegaEvents();
+  if (tab === 'mega') loadMegaEvents();
+  if (tab === 'templates') renderTemplates();
+  if (tab === 'plan') planOnOpen();
+}
+
+// ── PLAN PARTY ──────────────────────────────────────────────────────────────
+const PLAN_KEY = 'snowmentum_plan_draft_v1';
+let planDraft = { name:'', city:'', datetime:'', keyword:'', size:16, smsSlots:[], invitees:[], stops:{} };
+let planInvitees = [];
+let planSmsSlots = [];
+let planStopsData = {};
+
+function planOnOpen() {
+  try { const r = localStorage.getItem(PLAN_KEY); if (r) { const d = JSON.parse(r); planInvitees = d.invitees||[]; planSmsSlots = d.smsSlots||[]; planStopsData = d.stops||{}; Object.assign(planDraft, d); } } catch(e) {}
+  document.getElementById('plan-name').value      = planDraft.name || '';
+  document.getElementById('plan-city').value      = planDraft.city || '';
+  document.getElementById('plan-datetime').value  = planDraft.datetime || '';
+  document.getElementById('plan-keyword').value   = planDraft.keyword || '';
+  document.getElementById('plan-size').value      = planDraft.size || 16;
+  planRenderInviteList();
+  planRenderSmsSchedule();
+  planRenderStops();
+}
+
+function planPersist() {
+  planDraft = {
+    name: document.getElementById('plan-name').value,
+    city: document.getElementById('plan-city').value,
+    datetime: document.getElementById('plan-datetime').value,
+    keyword: document.getElementById('plan-keyword').value,
+    size: parseInt(document.getElementById('plan-size').value) || 16,
+    invitees: planInvitees,
+    smsSlots: planSmsSlots,
+    stops: planStopsData,
+  };
+  localStorage.setItem(PLAN_KEY, JSON.stringify(planDraft));
+}
+
+function planSaveDraft() { planPersist(); alert('Draft saved!'); }
+
+async function planPublish() {
+  planPersist();
+  if (!planDraft.name) { alert('Enter a party name first'); return; }
+  if (!planDraft.keyword) { alert('Set a keyword first'); return; }
+  try {
+    const res = await fetch('/api/save-party', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+      body: JSON.stringify({
+        partyName: planDraft.name,
+        partyCity: planDraft.city,
+        startTime: planDraft.datetime || null,
+        partySize: planDraft.size,
+        keyword: planDraft.keyword,
+        stops: planDraft.stops,
+        snowballers: planInvitees.map(inv => ({ name: inv.name, phone: inv.phone })),
+      }),
+    });
+    if (res.ok) {
+      alert(`✅ "${planDraft.name}" published! Signup link:\nhttps://snowball-party.vercel.app/join/${planDraft.keyword}`);
+      loadParties();
+    } else {
+      alert('Publish failed. Check your connection.');
+    }
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+// Invitees
+function planAddInvitee() {
+  const name  = document.getElementById('plan-invite-name').value.trim();
+  const phone = document.getElementById('plan-invite-phone').value.replace(/\D/g,'');
+  if (!name) return;
+  planInvitees.push({ id: Date.now(), name, phone });
+  document.getElementById('plan-invite-name').value  = '';
+  document.getElementById('plan-invite-phone').value = '';
+  planRenderInviteList();
+  planPersist();
+}
+
+function planPasteInvitees() {
+  const raw = document.getElementById('plan-invite-paste').value.trim();
+  if (!raw) return;
+  raw.split('\n').filter(Boolean).forEach((line, i) => {
+    const parts = line.split(/,\s*/);
+    const name  = parts[0].trim();
+    const phone = (parts[1] || '').replace(/\D/g,'');
+    if (name) planInvitees.push({ id: Date.now()+i, name, phone });
+  });
+  document.getElementById('plan-invite-paste').value = '';
+  planRenderInviteList();
+  planPersist();
+}
+
+function planRemoveInvitee(id) {
+  planInvitees = planInvitees.filter(i => i.id !== id);
+  planRenderInviteList();
+  planPersist();
+}
+
+function planRenderInviteList() {
+  const el = document.getElementById('plan-invite-list');
+  const countEl = document.getElementById('plan-invite-count');
+  const sendBtn = document.getElementById('plan-send-invites-btn');
+  countEl.textContent = planInvitees.length + ' invited';
+  sendBtn.style.display = planInvitees.length > 0 ? 'block' : 'none';
+  if (!planInvitees.length) { el.innerHTML = '<div style="font-size:11px;font-family:DM Mono,monospace;color:rgba(255,255,255,.25);padding:6px 0">No invitees yet</div>'; return; }
+  el.innerHTML = planInvitees.map(inv => `
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(255,255,255,.04);border-radius:7px">
+      <span style="flex:1;font-size:13px;color:#fff">${inv.name}</span>
+      <span style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.35)">${inv.phone?'📱 '+inv.phone:''}</span>
+      <button onclick="planRemoveInvitee(${inv.id})" style="background:none;border:none;color:rgba(255,80,80,.4);cursor:pointer;font-size:14px">×</button>
+    </div>`).join('');
+}
+
+async function planSendAllInvites() {
+  const keyword = document.getElementById('plan-keyword').value.trim() || 'SNOWBALL';
+  const name    = document.getElementById('plan-name').value.trim() || 'the party';
+  let sent = 0;
+  for (const inv of planInvitees) {
+    if (!inv.phone) continue;
+    const link = `https://snowball-party.vercel.app/join/${keyword}`;
+    const msg  = `Hey ${inv.name.split(' ')[0]}! You're invited to ${name}. Sign up here: ${link}`;
+    try {
+      await fetch('/api/send-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+        body: JSON.stringify({ to: '+1'+inv.phone, message: msg }),
+      });
+      sent++;
+    } catch(e) {}
+  }
+  alert(`${sent} invite${sent!==1?'s':''} sent!`);
+}
+
+// SMS Schedule
+function planAddSmsSlot() {
+  planSmsSlots.push({ id: Date.now(), offsetMinutes: -30, message: 'Party starts in 30 minutes! See you soon ❄️' });
+  planRenderSmsSchedule();
+  planPersist();
+}
+
+function planRemoveSmsSlot(id) {
+  planSmsSlots = planSmsSlots.filter(s => s.id !== id);
+  planRenderSmsSchedule();
+  planPersist();
+}
+
+function planRenderSmsSchedule() {
+  const el = document.getElementById('plan-sms-schedule');
+  const dt = document.getElementById('plan-datetime').value;
+  if (!dt && !planSmsSlots.length) { el.innerHTML = '<div style="font-size:11px;font-family:DM Mono,monospace;color:rgba(255,255,255,.3)">Set a party date/time first</div>'; return; }
+  if (!planSmsSlots.length) { el.innerHTML = '<div style="font-size:11px;font-family:DM Mono,monospace;color:rgba(255,255,255,.3)">No SMS blasts scheduled — hit + Add SMS Blast</div>'; return; }
+  const partyTime = dt ? new Date(dt) : null;
+  el.innerHTML = planSmsSlots.map(slot => {
+    const sendAt = partyTime ? new Date(partyTime.getTime() + slot.offsetMinutes * 60000) : null;
+    const timeStr = sendAt ? sendAt.toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : `${slot.offsetMinutes > 0 ? '+' : ''}${slot.offsetMinutes} min from start`;
+    return `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:#7bc4f7">📅 ${timeStr}</span>
+        <button onclick="planRemoveSmsSlot(${slot.id})" style="background:none;border:none;color:rgba(255,80,80,.4);cursor:pointer;font-size:13px">×</button>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.3)">offset (min):</span>
+        <input type="number" value="${slot.offsetMinutes}" oninput="planSmsSlots.find(s=>s.id===${slot.id}).offsetMinutes=parseInt(this.value)||0;planRenderSmsSchedule();planPersist()"
+          style="width:60px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:4px 6px;color:#fff;font-size:11px;outline:none">
+      </div>
+      <input value="${slot.message}" oninput="planSmsSlots.find(s=>s.id===${slot.id}).message=this.value;planPersist()"
+        placeholder="SMS message..."
+        style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:7px 10px;color:#fff;font-size:12px;outline:none;width:100%">
+    </div>`;
+  }).join('');
+}
+
+// Pre-built stops
+function planRenderStops() {
+  const size  = parseInt(document.getElementById('plan-size').value) || 16;
+  const tiers = [
+    { l:'4-Stop', c: size >= 64 ? 16 : size >= 32 ? 8 : size >= 16 ? 4 : 2 },
+    { l:'Final-4', c: size >= 64 ? 8 : size >= 32 ? 4 : size >= 16 ? 2 : 1 },
+  ];
+  const el = document.getElementById('plan-stops-grid');
+  let html = '';
+  tiers.forEach((tier, ti) => {
+    for (let i = 0; i < tier.c; i++) {
+      const key = `${ti}-${i}`;
+      const s   = planStopsData[key] || {};
+      html += `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.4);margin-bottom:6px">${tier.l} #${i+1}</div>
+        <input placeholder="Location name" value="${s.locName||''}" oninput="planStopsData['${key}']={...(planStopsData['${key}']||{}),locName:this.value};planPersist()"
+          style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:5px 8px;color:#fff;font-size:11px;outline:none;margin-bottom:4px">
+        <input placeholder="Activity" value="${s.activity||''}" oninput="planStopsData['${key}']={...(planStopsData['${key}']||{}),activity:this.value};planPersist()"
+          style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:5px 8px;color:#fff;font-size:11px;outline:none">
+      </div>`;
+    }
+  });
+  el.innerHTML = html || '<div style="font-size:11px;color:rgba(255,255,255,.3)">Adjust party size and click Refresh</div>';
+}
+
+// ── PARTIES ───────────────────────────────────────────────────────────
+async function loadParties() {
+  // Show skeleton immediately
+  const tbody = document.getElementById('parties-tbody');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--muted);font-family:DM Mono,monospace;font-size:11px">Loading...</td></tr>';
+  const statsEl = document.getElementById('party-stats');
+  const res = await fetch('/api/get-parties', { headers: { 'x-admin-token': adminToken } });
+  if (!res.ok) { doLogout(); return; }
+  const data = await res.json();
+  allParties = data.parties || [];
+  renderParties();
+}
+
+function renderParties() {
+  // Stats
+  const statsEl = document.getElementById('party-stats');
+  const totalSbs = allParties.reduce((s, p) => s + (p.snowballer_count || 0), 0);
+  const active = allParties.filter(p => p.status === 'active').length;
+  statsEl.innerHTML = `
+    <div class="stat-card"><div class="stat-label">Total Parties</div><div class="stat-val" style="color:var(--blue-light)">${allParties.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Active Now</div><div class="stat-val" style="color:var(--green)">${active}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Snowballers</div><div class="stat-val" style="color:var(--amber)">${totalSbs}</div></div>
+  `;
+
+  const tbody = document.getElementById('parties-tbody');
+  if (!allParties.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty">No parties yet — create a party in the app and it will appear here automatically</div></td></tr>';
+    return;
+  }
+
+  const statusColors = { draft:'var(--amber)', active:'var(--green)', completed:'var(--muted)' };
+  const statusLabels = { draft:'● Draft', active:'● Active', completed:'✓ Done' };
+
+  tbody.innerHTML = allParties.map((p, idx) => {
+    const date = p.created_at ? new Date(p.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '—';
+    const status = p.status || 'draft';
+    const stopsData = (() => { try { return JSON.parse(p.stops_data || '{}'); } catch(e) { return {}; } })();
+    const stopCount = Object.keys(stopsData).filter(k => stopsData[k] && stopsData[k].location).length;
+
+    // Build stop rows for detail view
+    const stopRows = Object.entries(stopsData).map(([key, s]) => {
+      if (!s) return '';
+      const loc = s.location ? s.location.name : '—';
+      const act = s.activity || '—';
+      const budget = s.budget ? `$${s.budget}` : '—';
+      const sbs = (s.snowballers || []).filter(Boolean).map(sb => sb.name).join(', ') || '—';
+      return `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:8px 12px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">Stop ${key}</td>
+        <td style="padding:8px 12px;font-size:12px"><strong>${loc}</strong></td>
+        <td style="padding:8px 12px;font-size:12px;color:var(--muted)">${act}</td>
+        <td style="padding:8px 12px;font-size:12px;color:var(--green);font-family:'DM Mono',monospace">${budget}</td>
+        <td style="padding:8px 12px;font-size:12px;color:var(--muted)">${sbs}</td>
+      </tr>`;
+    }).join('');
+
+    return `<tr class="party-row" onclick="togglePartyDetail(${idx})">
+      <td><strong>${p.name || '—'}</strong></td>
+      <td style="color:var(--muted);font-size:12px">${p.city || '—'}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">${date}</td>
+      <td><span style="font-family:'DM Mono',monospace;font-size:10px;color:${statusColors[status]};border:1px solid ${statusColors[status]}44;padding:2px 8px;border-radius:8px">${statusLabels[status]}</span></td>
+      <td><span class="badge badge-blue">${p.party_size || '—'}</span></td>
+      <td><span class="badge badge-green">${p.snowballer_count || 0} people</span></td>
+    </tr>
+    <tr id="party-detail-${idx}" class="expand-row">
+      <td colspan="6" style="padding:0;background:var(--bg)">
+        <div style="padding:16px 20px;border-top:1px solid var(--border)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="font-family:'DM Sans',sans-serif;font-weight:600;font-size:14px">Party Detail — ${p.name}</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">Status:</span>
+              <select onchange="updatePartyStatus('${p.id}',this.value)" style="font-family:'DM Mono',monospace;font-size:11px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);cursor:pointer">
+                <option value="draft" ${status==='draft'?'selected':''}>Draft</option>
+                <option value="active" ${status==='active'?'selected':''}>Active</option>
+                <option value="completed" ${status==='completed'?'selected':''}>Completed</option>
+              </select>
+              <button onclick="editPartyInBracket('${p.id}')" style="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;background:rgba(0,88,250,.2);border:1px solid rgba(0,88,250,.4);color:#7cb4ff;border-radius:6px;padding:5px 12px;cursor:pointer">✏️ Edit in Bracket</button>
+              <label style="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;background:rgba(232,200,74,.15);border:1px solid rgba(232,200,74,.4);color:#e8c84a;border-radius:6px;padding:5px 12px;cursor:pointer">
+                🖼 Upload Flyer
+                <input type="file" accept="image/*" style="display:none" onchange="uploadFlyer('${p.id}', this)">
+              </label>
+              ${p.flyer_url ? `<img src="${p.flyer_url}" style="height:36px;border-radius:4px;object-fit:cover;border:1px solid rgba(255,255,255,.2)">` : ''}
+            </div>
+          </div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:10px">
+            ${p.keyword ? `Keyword: <strong style="color:var(--amber)">${p.keyword}</strong> &nbsp;·&nbsp;` : ''}
+            Size: ${p.party_size || '—'} &nbsp;·&nbsp;
+            ${stopCount} stop${stopCount !== 1 ? 's' : ''} with locations
+          </div>
+          ${stopRows ? `<table style="width:100%;font-size:12px;border-collapse:collapse">
+            <thead><tr style="background:var(--surface)">
+              <th style="padding:6px 12px;text-align:left;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);font-weight:500">Stop</th>
+              <th style="padding:6px 12px;text-align:left;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);font-weight:500">Location</th>
+              <th style="padding:6px 12px;text-align:left;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);font-weight:500">Activity</th>
+              <th style="padding:6px 12px;text-align:left;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);font-weight:500">Budget</th>
+              <th style="padding:6px 12px;text-align:left;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);font-weight:500">Snowballers</th>
+            </tr></thead>
+            <tbody>${stopRows}</tbody>
+          </table>` : '<div style="color:var(--muted);font-size:12px">No stop details yet — set locations in the bracket app</div>'}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function togglePartyDetail(idx) {
+  const row = document.getElementById('party-detail-' + idx);
+  if (row) row.classList.toggle('open');
+}
+
+async function updatePartyStatus(partyId, status) {
+  try {
+    const res = await fetch('/api/update-party-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+      body: JSON.stringify({ partyId, status })
+    });
+    if (res.ok) showAdminToast('Status updated ✓');
+    else showAdminToast('Update failed', true);
+  } catch(e) { showAdminToast('Error updating status', true); }
+}
+
+function showAdminToast(msg, err) {
+  const t = document.getElementById('admin-toast') || (() => {
+    const el = document.createElement('div');
+    el.id = 'admin-toast';
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a2744;border:1px solid var(--border);border-radius:8px;padding:10px 20px;font-family:DM Mono,monospace;font-size:12px;color:#fff;z-index:999;transition:opacity .3s';
+    document.body.appendChild(el);
+    return el;
+  })();
+  t.textContent = msg;
+  t.style.borderLeftColor = err ? '#ff7c7c' : 'var(--green)';
+  t.style.opacity = '1';
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.style.opacity = '0', 2500);
+}
+
+// ── SNOWBALLERS ───────────────────────────────────────────────────────
+async function loadSnowballers() {
+  const res = await fetch('/api/get-snowballers', { headers: { 'x-admin-token': adminToken } });
+  if (!res.ok) return;
+  const data = await res.json();
+  allSnowballers = data.snowballers || [];
+  renderSnowballers(allSnowballers);
+}
+
+function renderSnowballers(list) {
+  // Stats
+  const statsEl = document.getElementById('sb-stats');
+  const returning = list.filter(s => s.parties_count > 1).length;
+  statsEl.innerHTML = `
+    <div class="stat-card"><div class="stat-label">Total Snowballers</div><div class="stat-val" style="color:var(--blue-light)">${list.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Returning</div><div class="stat-val" style="color:var(--green)">${returning}</div></div>
+    <div class="stat-card"><div class="stat-label">First-Timers</div><div class="stat-val" style="color:var(--amber)">${list.length - returning}</div></div>
+  `;
+
+  const tbody = document.getElementById('sb-tbody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty">No snowballers yet</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = list.map(sb => {
+    const lastSeen = sb.last_seen ? new Date(sb.last_seen).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '—';
+    const partyNames = (sb.parties || []).map(p => p?.name || '—').join(', ') || '—';
+    const isReturning = sb.parties_count > 1;
+    return `<tr style="cursor:pointer" onclick="openSnowballer('${sb.id}')" onmouseover="this.style.background='rgba(255,255,255,.04)'" onmouseout="this.style.background=''">
+      <td>
+        <strong>${sb.name || '—'}</strong>
+        ${isReturning ? '<span class="badge badge-green">returning</span>' : ''}
+      </td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">${sb.phone || '—'}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">${sb.email || '—'}</td>
+      <td style="font-size:12px;color:var(--amber)">
+        ${sb.passport_name ? `<span title="${sb.passport_name}" style="cursor:help">🎭 ${sb.passport_name}</span>` : '—'}
+      </td>
+      <td><span class="badge badge-blue">${sb.parties_count || 0}</span></td>
+      <td style="font-size:12px;color:var(--muted)">${lastSeen}</td>
+      <td style="font-size:12px;color:var(--muted)">${partyNames}</td>
+    </tr>`;
+  }).join('');
+}
+
+function filterSnowballers() {
+  const q = document.getElementById('sb-search').value.toLowerCase();
+  const filtered = allSnowballers.filter(sb =>
+    (sb.name || '').toLowerCase().includes(q) || (sb.phone || '').includes(q)
+  );
+  renderSnowballers(filtered);
+}
+
+// ── SAVE CURRENT PARTY ────────────────────────────────────────────────
+async function saveCurrentParty() {
+  // Read party data from the main app's localStorage
+  let state = null;
+  try {
+    const raw = localStorage.getItem('snowmentum_party_v1');
+    if (raw) state = JSON.parse(raw);
+  } catch(e) {}
+
+  if (!state) {
+    showToast('No party data found — open the main app and build a party first', true);
+    return;
+  }
+
+  // Collect all snowballers from stops
+  const snowballers = [];
+  const stops = state.stops || {};
+  Object.entries(stops).forEach(([key, stop]) => {
+    (stop.snowballers || []).forEach(sb => {
+      if (sb && (sb.name || sb.phone)) {
+        snowballers.push({ ...sb, stopKey: key });
+      }
+    });
+  });
+
+  const res = await fetch('/api/save-party', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+    body: JSON.stringify({
+      partyName: state.partyName || 'Unnamed Party',
+      partyCity: state.partyCity || '',
+      startTime: state.startTime || null,
+      partySize: state.partySize || 16,
+      stops: state.stops || {},
+      snowballers,
+    }),
+  });
+
+  const data = await res.json();
+  if (data.success) {
+    showToast(`Party saved! ${snowballers.length} snowballers recorded`);
+    loadParties();
+    loadSnowballers();
+  } else {
+    showToast('Save failed — ' + (data.error || 'unknown error'), true);
+  }
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────
+function showToast(msg, err = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (err ? ' err' : '');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.className = 'toast', 3000);
+}
+
+// ── ACTIVITIES ────────────────────────────────────────────────────────
+let allActivities = [];
+let activeCategory = 'All';
+
+async function loadActivities() {
+  const res = await fetch('/api/activities', { headers: { 'x-admin-token': adminToken } });
+  const data = await res.json();
+  allActivities = data.activities || [];
+  renderCategoryFilters();
+  renderActivities();
+}
+
+function renderCategoryFilters() {
+  const cats = ['All', ...new Set(allActivities.map(a => a.category))].sort();
+  const el = document.getElementById('cat-filters');
+  el.innerHTML = cats.map(c => `
+    <button onclick="filterByCategory('${c}')" style="font-family:'DM Mono',monospace;font-size:10px;padding:4px 12px;border-radius:10px;border:1px solid ${activeCategory===c?'var(--blue-light)':'var(--border)'};background:${activeCategory===c?'rgba(0,88,250,.2)':'transparent'};color:${activeCategory===c?'var(--blue-light)':'var(--muted)'};cursor:pointer">${c} ${c==='All'?allActivities.length:allActivities.filter(a=>a.category===c).length}</button>
+  `).join('');
+}
+
+function filterByCategory(cat) {
+  activeCategory = cat;
+  renderCategoryFilters();
+  renderActivities();
+}
+
+function renderActivities() {
+  const list = activeCategory === 'All' ? allActivities : allActivities.filter(a => a.category === activeCategory);
+  const tbody = document.getElementById('activities-tbody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty">No activities found</div></td></tr>';
+    return;
+  }
+  const catColors = { Creative:'var(--blue-light)', Deep:'var(--amber)', Games:'var(--green)', Music:'#c084fc', Physical:'#fb923c', Social:'#22d3ee', Storytelling:'#f472b6' };
+  tbody.innerHTML = list.map(a => `
+    <tr>
+      <td><strong>${a.name}</strong></td>
+      <td><span class="badge" style="background:${catColors[a.category]||'var(--muted)'}22;color:${catColors[a.category]||'var(--muted)'}">${a.category}</span></td>
+      <td style="font-size:12px;color:var(--muted)">${a.description || '—'}</td>
+      <td>${a.url ? `<a href="${a.url}" target="_blank" style="color:var(--blue-light);font-size:11px;font-family:'DM Mono',monospace">↗ link</a>` : '—'}</td>
+      <td style="display:flex;gap:6px">
+        <button onclick="editActivity('${a.id}')" style="background:rgba(255,255,255,.08);border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">Edit</button>
+        <button onclick="deleteActivity('${a.id}','${a.name.replace(/'/g,"\'")}')" style="background:rgba(255,60,60,.1);border:none;color:var(--red);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function showAddActivity() {
+  document.getElementById('af-id').value = '';
+  document.getElementById('af-name').value = '';
+  document.getElementById('af-category').value = 'Social';
+  document.getElementById('af-desc').value = '';
+  document.getElementById('af-url').value = '';
+  document.getElementById('activity-form-title').textContent = 'Add Activity';
+  document.getElementById('activity-form').style.display = 'block';
+  document.getElementById('af-name').focus();
+}
+
+function editActivity(id) {
+  const a = allActivities.find(x => x.id === id);
+  if (!a) return;
+  document.getElementById('af-id').value = a.id;
+  document.getElementById('af-name').value = a.name;
+  document.getElementById('af-category').value = a.category;
+  document.getElementById('af-desc').value = a.description || '';
+  document.getElementById('af-url').value = a.url || '';
+  document.getElementById('activity-form-title').textContent = 'Edit Activity';
+  document.getElementById('activity-form').style.display = 'block';
+  document.getElementById('af-name').focus();
+  window.scrollTo(0, 0);
+}
+
+async function saveActivity() {
+  const id = document.getElementById('af-id').value;
+  const name = document.getElementById('af-name').value.trim();
+  const category = document.getElementById('af-category').value;
+  const description = document.getElementById('af-desc').value.trim();
+  const url = document.getElementById('af-url').value.trim();
+  if (!name) { showToast('Name is required', true); return; }
+
+  const method = id ? 'PUT' : 'POST';
+  const body = id ? { id, name, category, description, url } : { name, category, description, url };
+
+  const res = await fetch('/api/activities', {
+    method,
+    headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+    body: JSON.stringify(body),
+  });
+
+  if (res.ok) {
+    showToast(id ? 'Activity updated' : 'Activity added');
+    document.getElementById('activity-form').style.display = 'none';
+    loadActivities();
+  } else {
+    showToast('Save failed', true);
+  }
+}
+
+async function deleteActivity(id, name) {
+  if (!confirm(`Delete "${name}"? It will be hidden from the app.`)) return;
+  const res = await fetch('/api/activities', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+    body: JSON.stringify({ id }),
+  });
+  if (res.ok) { showToast(`"${name}" removed`); loadActivities(); }
+  else showToast('Delete failed', true);
+}
+
+
+// ── PASSPORTS ─────────────────────────────────────────────────────────
+async function loadPassportsAdmin() {
+  const res = await fetch('/api/passports', { headers: { 'x-admin-token': adminToken } });
+  const data = await res.json();
+  const passports = data.passports || [];
+  document.getElementById('passport-count').textContent = `${passports.length} identities`;
+  const tbody = document.getElementById('passports-tbody');
+  if (!passports.length) {
+    tbody.innerHTML = '<tr><td colspan="4"><div class="empty">No passports found — run the SQL setup first</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = passports.map((p, i) => `
+    <tr>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">${i+1}</td>
+      <td><strong>${p.name}</strong></td>
+      <td>${p.url ? `<a href="${p.url}" target="_blank" style="color:var(--blue-light);font-family:'DM Mono',monospace;font-size:11px">${p.url}</a>` : '—'}</td>
+      <td><span class="badge badge-blue">—</span></td>
+    </tr>
+  `).join('');
+}
+
+
+async function editPartyInBracket(partyId) {
+  // Find the party data
+  const p = allParties.find(x => x.id === partyId);
+  if (!p) return alert('Party not found');
+
+  // Parse stops_data
+  let stopsData = {};
+  try { stopsData = typeof p.stops_data === 'string' ? JSON.parse(p.stops_data) : (p.stops_data || {}); } catch(e) {}
+
+  // Build state object matching what the bracket app expects
+  const state = {
+    partyId: p.id,
+    partyName: p.name || '',
+    partyCity: p.city || '',
+    partySize: p.party_size || 16,
+    partyStatus: p.status || 'draft',
+    keyword: p.keyword || '',
+    stops: stopsData,
+  };
+
+  // Store in localStorage so the bracket app can pick it up on load
+  localStorage.setItem('snowball_load_from_admin', JSON.stringify(state));
+
+  // Open bracket app
+  window.open('/', '_blank');
+}
+
+async function uploadFlyer(partyId, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64 = e.target.result;
+    try {
+      const res = await fetch('/api/save-flyer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+        body: JSON.stringify({ partyId, flyerBase64: base64, fileName: file.name })
+      });
+      const data = await res.json();
+      if (data.flyer_url) {
+        showToast('Flyer uploaded! ✓');
+        loadParties();
+      } else {
+        showToast('Upload failed: ' + (data.error || 'unknown'), 'error');
+      }
+    } catch(e) {
+      showToast('Upload failed', 'error');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function openSnowballer(id) {
+  const sb = allSnowballers.find(s => s.id === id);
+  if (!sb) return;
+  document.getElementById('sb-modal-name').textContent = sb.name || 'Snowballer';
+  document.getElementById('sb-modal').style.display = 'flex';
+
+  // Build profile HTML
+  const rows = [
+    ['Name', sb.name || '—'],
+    ['Phone', sb.phone || '—'],
+    ['Email', sb.email || '—'],
+    ['Passport', sb.passport_name || '—'],
+    ['First Seen', sb.first_seen ? new Date(sb.first_seen).toLocaleDateString() : '—'],
+    ['Last Seen', sb.last_seen ? new Date(sb.last_seen).toLocaleDateString() : '—'],
+    ['Parties', sb.parties_count || 1],
+  ];
+
+  const infoHtml = rows.map(([label, val]) => `
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase">${label}</span>
+      <span style="font-size:13px;font-weight:500">${val}</span>
+    </div>`).join('');
+
+  // Load party history
+  let partyHtml = '<div style="color:var(--muted);font-size:12px;margin-top:16px">Loading party history...</div>';
+
+  document.getElementById('sb-modal-body').innerHTML = infoHtml + partyHtml;
+
+  // Fetch party history
+  try {
+    const res = await fetch('/api/get-parties', { headers: { 'x-admin-token': adminToken } });
+    const data = await res.json();
+    const myParties = (data.parties || []).filter(p => {
+      // Check if snowballer is in this party's stops_data
+      if (!p.stops_data) return false;
+      try {
+        const stops = typeof p.stops_data === 'string' ? JSON.parse(p.stops_data) : p.stops_data;
+        return Object.values(stops).some(s => (s.snowballers || []).some(x => x.name === sb.name));
+      } catch(e) { return false; }
+    });
+
+    if (myParties.length) {
+      partyHtml = `
+        <div style="margin-top:20px">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Party History</div>
+          ${myParties.map(p => `
+            <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-weight:600;font-size:13px">${p.name}</div>
+                <div style="font-size:11px;color:var(--muted)">${p.city || ''} · ${p.created_at ? new Date(p.created_at).toLocaleDateString() : ''}</div>
+              </div>
+              <span style="font-size:10px;font-family:'DM Mono',monospace;color:${p.status==='active'?'#6dd96d':p.status==='completed'?'rgba(255,255,255,.3)':'#e8c84a'}">${p.status || 'draft'}</span>
+            </div>`).join('')}
+        </div>`;
+    } else {
+      partyHtml = '<div style="color:var(--muted);font-size:12px;margin-top:16px;font-style:italic">No party history found.</div>';
+    }
+
+    document.getElementById('sb-modal-body').innerHTML = infoHtml + partyHtml;
+  } catch(e) {
+    document.getElementById('sb-modal-body').innerHTML = infoHtml + '<div style="color:var(--muted);font-size:12px;margin-top:16px">Could not load party history.</div>';
+  }
+}
+
+function closeSbModal() {
+  document.getElementById('sb-modal').style.display = 'none';
+}
+
+async function uploadPlanFlyer(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('plan-flyer-label').textContent = 'Uploading...';
+
+  // If no partyId yet, save draft first
+  if (!planDraft.id) {
+    await saveCurrentParty();
+    await new Promise(r => setTimeout(r, 1000));
+  }
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    // Show preview immediately
+    const preview = document.getElementById('plan-flyer-preview');
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+
+    if (!planDraft.id) {
+      document.getElementById('plan-flyer-label').textContent = 'Save party first';
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/save-flyer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+        body: JSON.stringify({ partyId: planDraft.id, flyerBase64: e.target.result, fileName: file.name })
+      });
+      const data = await res.json();
+      if (data.flyer_url) {
+        document.getElementById('plan-flyer-label').textContent = '✓ Flyer Uploaded';
+        document.getElementById('plan-flyer-btn').style.borderColor = '#6dd96d';
+        document.getElementById('plan-flyer-btn').style.color = '#6dd96d';
+        showToast('Flyer uploaded ✓');
+      } else {
+        document.getElementById('plan-flyer-label').textContent = 'Upload failed';
+        showToast('Upload failed: ' + (data.error || 'unknown'), 'error');
+      }
+    } catch(e) {
+      document.getElementById('plan-flyer-label').textContent = 'Upload failed';
+      showToast('Upload failed', 'error');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── LA BRACKET TEMPLATES ────────────────────────────────────────────────────
+const LA_TEMPLATES = [
+  {
+    "name": "The Grove (Pat & Laura)",
+    "city": "The Grove, Los Angeles, CA",
+    "partySize": 16,
+    "stops": {
+      "0-0": {
+        "location": {
+          "name": "Trader Joes"
+        },
+        "activity": {
+          "name": "Grab a banana and find your partner also holding a banana. Take a selfie and send to Snow Patrol."
+        }
+      },
+      "0-1": {
+        "location": {
+          "name": "Christmas Tree at The Grove"
+        },
+        "activity": {
+          "name": "Find a santa hat hidden under a bench. Meet your partner at the Christmas tree."
+        }
+      },
+      "1-0": {
+        "location": {
+          "name": "Whole Foods"
+        },
+        "activity": {
+          "name": "Place one pineapple, one avocado, and one stick of deodorant in a basket. Proceed to bakery to find partner. Bow when you see them."
+        }
+      },
+      "1-1": {
+        "location": {
+          "name": "Anthropologie"
+        },
+        "activity": {
+          "name": "Lay on opposite sides of the store. Yoga slumber party selfie."
+        }
+      },
+      "1-2": {
+        "location": {
+          "name": "Barnes And Noble"
+        },
+        "activity": {
+          "name": "Find your partner in the bookstore."
+        }
+      },
+      "1-3": {
+        "location": {
+          "name": "Movie Theatre"
+        },
+        "activity": {
+          "name": "Go to customer service, get 3D glasses. Put them on and give 5 pairs to strangers. Take a selfie."
+        }
+      },
+      "2-0": {
+        "location": {
+          "name": "Sephora"
+        },
+        "activity": {
+          "name": "Ask makeup artist to apply Lululemon red lipstick. Duck face selfie."
+        }
+      },
+      "2-1": {
+        "location": {
+          "name": "Tesla Toy Cars"
+        },
+        "activity": {
+          "name": "Find toy cars near the Tesla. Race against each other. Victory/Defeat selfie."
+        }
+      },
+      "3-0": {
+        "location": {
+          "name": "CakeMix"
+        },
+        "activity": {
+          "name": "Cake Making"
+        }
+      }
+    }
+  },
+  {
+    "name": "Melrose/La Cienega (Malcolm & Brianna)",
+    "city": "Melrose, Los Angeles, CA",
+    "partySize": 16,
+    "stops": {
+      "0-0": {
+        "location": {
+          "name": "LA Psychic"
+        },
+        "activity": {
+          "name": "Get tarot card reading and psychic evaluation. $20 \u2014 call ahead."
+        }
+      },
+      "0-1": {
+        "location": {
+          "name": "Polkadots and Moonbeams"
+        },
+        "activity": {
+          "name": "Dress in 60s outfits with at least one tutu. Call ahead."
+        }
+      },
+      "0-2": {
+        "location": {
+          "name": "TJ Maxx"
+        },
+        "activity": {
+          "name": "Mumu Madness \u2014 try on the loudest Mumu they have."
+        }
+      },
+      "0-3": {
+        "location": {
+          "name": "PetSmart"
+        },
+        "activity": {
+          "name": "Send photo with a reptile on your shoulder."
+        }
+      },
+      "1-0": {
+        "location": {
+          "name": "The Phoenix"
+        },
+        "activity": {
+          "name": "Create a full story using only 4 polaroids and at least one stranger."
+        }
+      },
+      "1-1": {
+        "location": {
+          "name": "Goal Sports Cafe"
+        },
+        "activity": {
+          "name": "Use Kazoos and bubbles and sing on street. Must make at least $2 to get next clue."
+        }
+      },
+      "1-2": {
+        "location": {
+          "name": "The Belmont"
+        },
+        "activity": {
+          "name": "Give at least 40 people sincere compliments and hug them."
+        }
+      },
+      "1-3": {
+        "location": {
+          "name": "Toca Madera"
+        },
+        "activity": {
+          "name": "Drinking game."
+        }
+      },
+      "2-0": {
+        "location": {
+          "name": "AIR Los Angeles"
+        },
+        "activity": {
+          "name": "Learn to do Aerial Yoga. $50 \u2014 call ahead."
+        }
+      },
+      "2-1": {
+        "location": {
+          "name": "Lagree Fitness"
+        },
+        "activity": {
+          "name": "Do 15 minute class. $50 \u2014 call ahead."
+        }
+      },
+      "3-0": {
+        "location": {
+          "name": "Rosewood Round About"
+        },
+        "activity": {
+          "name": "Camp games \u2014 Book of Questions."
+        }
+      }
+    }
+  },
+  {
+    "name": "WeHo (Nathan & Barry)",
+    "city": "West Hollywood, CA",
+    "partySize": 16,
+    "stops": {
+      "0-0": {
+        "location": {
+          "name": "William S. Hart Dog Park"
+        },
+        "activity": {
+          "name": "Take a picture with a dog. Text & post to IG. Juice boxes (spiked) provided."
+        }
+      },
+      "0-1": {
+        "location": {
+          "name": "The Hudson"
+        },
+        "activity": {
+          "name": "Take pictures in the photo booth. Get a free drink."
+        }
+      },
+      "0-2": {
+        "location": {
+          "name": "West Hollywood Library"
+        },
+        "activity": {
+          "name": "Find clue hidden in a book."
+        }
+      },
+      "0-3": {
+        "location": {
+          "name": "LA Psychic Gina"
+        },
+        "activity": {
+          "name": "Get a psychic reading."
+        }
+      },
+      "0-4": {
+        "location": {
+          "name": "The Laugh Factory"
+        },
+        "activity": {
+          "name": "Each Snowballer gets half a knock knock joke. Stand outside and tell your half until someone completes it."
+        }
+      },
+      "0-5": {
+        "location": {
+          "name": "Headline Records"
+        },
+        "activity": {
+          "name": "Find clue hidden in an LP."
+        }
+      },
+      "0-6": {
+        "location": {
+          "name": "West Hollywood Beauty Supply"
+        },
+        "activity": {
+          "name": "Buy makeup for a makeover."
+        }
+      },
+      "0-7": {
+        "location": {
+          "name": "Out of the Closet"
+        },
+        "activity": {
+          "name": "Buy clothes for a makeover."
+        }
+      },
+      "1-0": {
+        "location": {
+          "name": "Crossroads Trading Company"
+        },
+        "activity": {
+          "name": "Buy clothing to wear while performing a scene from a play. Film it at Coast Playhouse."
+        }
+      },
+      "1-1": {
+        "location": {
+          "name": "The Belmont"
+        },
+        "activity": {
+          "name": "Drinking game with clues to next location."
+        }
+      },
+      "1-2": {
+        "location": {
+          "name": "The Hudson"
+        },
+        "activity": {
+          "name": "Pictures in photo booth. Drinks."
+        }
+      },
+      "1-3": {
+        "location": {
+          "name": "Hamburger Mary's"
+        },
+        "activity": {
+          "name": "Give someone a makeover. Drinks."
+        }
+      },
+      "2-0": {
+        "location": {
+          "name": "Hamburger Mary's"
+        },
+        "activity": {
+          "name": "Food and a game with clues to next location."
+        }
+      },
+      "2-1": {
+        "location": {
+          "name": "Saddle Ranch"
+        },
+        "activity": {
+          "name": "Ride the bull. Food."
+        }
+      },
+      "3-0": {
+        "location": {
+          "name": "Barney's Beanery"
+        },
+        "activity": {
+          "name": "Drinks and games."
+        }
+      }
+    }
+  },
+  {
+    "name": "WeHo Sunset Strip",
+    "city": "West Hollywood, CA",
+    "partySize": 16,
+    "stops": {
+      "0-0": {
+        "location": {
+          "name": "William S. Hart Dog Park"
+        },
+        "activity": {
+          "name": "Take a pictire with a dog and post it to IG. Next Clue will be delivered by Barry."
+        }
+      },
+      "0-1": {
+        "location": {
+          "name": "Crossroads Trading Company"
+        },
+        "activity": {
+          "name": "On the way there, pick a scene from a play (use your phones, probably). Then buy one or two pieces of clothing to wear while performing that scene. Walk next door to the Coast Playhouse and film the scene standing under the marquee."
+        }
+      },
+      "0-2": {
+        "location": {
+          "name": "Book Soup (a bit far)"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "0-4": {
+        "location": {
+          "name": "The Laugh Factory too far"
+        },
+        "activity": {
+          "name": "Each Snowballer gets half a \u201cknock knock\u201d joke (or similar). Stand on the street outside the club, telling your half of the joke until someone completes it."
+        }
+      },
+      "0-5": {
+        "location": {
+          "name": "Kings road Park"
+        },
+        "activity": {
+          "name": "Meditate at the waterfall. Take photos at the art and waterfall..."
+        }
+      },
+      "0-6": {
+        "location": {
+          "name": "West Hollywood Beauty Supply"
+        },
+        "activity": {
+          "name": "Buy make-up for makeover"
+        }
+      },
+      "0-7": {
+        "location": {
+          "name": "Out Of The Closet"
+        },
+        "activity": {
+          "name": "Buy Clothes for make-over"
+        }
+      },
+      "1-0": {
+        "location": {
+          "name": "The Hudson\n"
+        },
+        "activity": {
+          "name": "Take pictures in the photobooth, get a free drink."
+        }
+      },
+      "1-1": {
+        "location": {
+          "name": "The Belmont (Far)"
+        },
+        "activity": {
+          "name": "Drinking game & clues to next location"
+        }
+      },
+      "1-3": {
+        "location": {
+          "name": "Hamburger Mary's"
+        },
+        "activity": {
+          "name": "Give some one a make over, drinks"
+        }
+      },
+      "2-0": {
+        "location": {
+          "name": "Barney's Beanery"
+        },
+        "activity": {
+          "name": "Drinks, game"
+        }
+      },
+      "2-1": {
+        "location": {
+          "name": "Saddle Ranch"
+        },
+        "activity": {
+          "name": "Ride the Bull"
+        }
+      },
+      "3-0": {
+        "location": {
+          "name": "kings road park?"
+        },
+        "activity": {
+          "name": ""
+        }
+      }
+    }
+  },
+  {
+    "name": "WeHo Melrose",
+    "city": "West Hollywood, CA",
+    "partySize": 16,
+    "stops": {
+      "0-0": {
+        "location": {
+          "name": "Sportie LA"
+        },
+        "activity": {
+          "name": "Try on a pari of red shoes, find your partner by locating the other person trying on red shoes"
+        }
+      },
+      "0-1": {
+        "location": {
+          "name": "Headline Records"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "0-2": {
+        "location": {
+          "name": "Meet At Banksy Bench, procede to Puzzle Zoo"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "0-3": {
+        "location": {
+          "name": "American Vintage"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "0-4": {
+        "location": {
+          "name": "Odessa Market"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "0-5": {
+        "location": {
+          "name": "Russian Souvenirs and gifts "
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "0-6": {
+        "location": {
+          "name": "Gallery 1988 (WEST)"
+        },
+        "activity": {
+          "name": "Go to Gallery 1988 and sit down on the floor in front of your favorite piece of art "
+        }
+      },
+      "0-7": {
+        "location": {
+          "name": "Japan LA"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "1-0": {
+        "location": {
+          "name": "Fairfax High to Tomate Pizza"
+        },
+        "activity": {
+          "name": "Drink hidden cokcatils, then stop over and get a pizza"
+        }
+      },
+      "1-1": {
+        "location": {
+          "name": "Alley btween Gardner & Vista"
+        },
+        "activity": {
+          "name": "Decide on your favorite Madonna song. Sing a verse or chorus from this song, in the alley, for your next clue. \n\nDrink, play hopscotch\n"
+        }
+      },
+      "1-2": {
+        "location": {
+          "name": "Pleasure Chest"
+        },
+        "activity": {
+          "name": "Pretend to be a couple and choose a pink sex toy, then find the couple doing the same."
+        }
+      },
+      "1-3": {
+        "location": {
+          "name": "The Dark Room"
+        },
+        "activity": {
+          "name": "Darts, beers, and reading excerpts of Fear and Loathing. Take photo at booth - imitate photo given."
+        }
+      },
+      "2-0": {
+        "location": {
+          "name": "Fairfax HighSteps"
+        },
+        "activity": {
+          "name": "Eat Pizza, write inspirational messages for the highschollers in sidewalk chalk, put together a puzzle. Name Game."
+        }
+      },
+      "2-1": {
+        "location": {
+          "name": "Now Boarding (opens at 7)"
+        },
+        "activity": {
+          "name": "Cocktail class? food."
+        }
+      },
+      "3-0": {
+        "location": {
+          "name": "Poinsettia Rec Center"
+        },
+        "activity": {
+          "name": "Drinks, high fives, prepare for the bus, make sure everyone haas gone to the restroom!!"
+        }
+      }
+    }
+  },
+  {
+    "name": "Silver Lake",
+    "city": "Silver Lake, CA",
+    "partySize": 16,
+    "stops": {
+      "1-0": {
+        "location": {
+          "name": "Record Store (Franky's Barber, or Vacation)"
+        },
+        "activity": {
+          "name": "A clue is left behind an album. They find it. They're told to come up with their DJ names, Now that they're DJ's, they have an important task - each must select a cheap album that they'll be spinning later in the evening"
+        }
+      },
+      "2-0": {
+        "location": {
+          "name": "Triangle tree/Juice Bar (two large shots of face melters each)"
+        },
+        "activity": {
+          "name": "Participants get a clue underneath the tree. They're instructed to go to Naturewell. They tell the server they're doing the Snowball party. She's been expecting them ... she serves up a FaceMelting shot."
+        }
+      },
+      "2-1": {
+        "location": {
+          "name": "Army Surplus"
+        },
+        "activity": {
+          "name": "Participants will find a clue with instructions. Tonight, they are the captains of their own Snowball army. They need to find some type of head, or body wear that will let the rest of the snowballer's know just who's in charge. They will then recite a passage from Full Metal Jacket addressing Private Snowball."
+        }
+      },
+      "3-0": {
+        "location": {
+          "name": "Pazza Gelato"
+        },
+        "activity": {
+          "name": "Participants will ask person if they serve Snowballs. They will then be handed an envelope which contains instructions and moustaches. The instructions will have them order, in their worst Italian accent, a straciatelli snowball gelato. They will film each other doing this and put it on social media"
+        }
+      },
+      "3-1": {
+        "location": {
+          "name": "Baller Hardware"
+        },
+        "activity": {
+          "name": "Participants will find a clue, instructing them to find the most \"Snowballer\" item available within Snowballer Hardware."
+        }
+      },
+      "3-2": {
+        "location": {
+          "name": "The Vista"
+        },
+        "activity": {
+          "name": "Participants will go to Box Office and say they wish to go to District Snowball. They will be handed an envelope. They will then be asked to come up with their own Snowball tribute names, as well as take a photo with the Vista Manager, who is dressed as someone from the Hunger Games. They will then upload their photo to our social media sites. Also, in their envelopes, there will be instructions to start thinking about a funny story that happened to them. Don't say what it is, keep it to themselves for later ... they'll know when the time is right. We should also give them a joke to memorize."
+        }
+      },
+      "3-3": {
+        "location": {
+          "name": "99 Cent Store"
+        },
+        "activity": {
+          "name": "Participants will meet at 99c store and be given a clue. They will find instructions and proceed to purchase  sign materials for park benches and DIY Billboards. They are to decorate the streets with signage for tonight's SNOWBALL event, signalling to other snowballers."
+        }
+      },
+      "3-4": {
+        "location": {
+          "name": "Wacko/Goodwill Store"
+        },
+        "activity": {
+          "name": "Participant will be given a clue to find and purchase a Magic 8-Ball. They are NOT to open it until instructed otherwise. They will then go to Goodwill and purchase garb reminiscent of Fortune Tellers."
+        }
+      },
+      "3-5": {
+        "location": {
+          "name": "Circus of Books"
+        },
+        "activity": {
+          "name": "Participants will be given clue with instructions. They will be instructed to find four books ... each one a different genre ... they will need this for later and will become to clear to them when."
+        }
+      },
+      "3-6": {
+        "location": {
+          "name": "Brian & Levi: Silverlake 1 (M: 4, F: 6)"
+        },
+        "activity": {
+          "name": "Email"
+        }
+      },
+      "3-7": {
+        "location": {
+          "name": "Mark DeRoche"
+        },
+        "activity": {
+          "name": "deroche@aerofex.com"
+        }
+      },
+      "3-8": {
+        "location": {
+          "name": "LP- Kathryn Burns"
+        },
+        "activity": {
+          "name": "kathrynburns@mac.com"
+        }
+      },
+      "3-9": {
+        "location": {
+          "name": "BK-Alie Ward"
+        },
+        "activity": {
+          "name": "alieward@gmail.com"
+        }
+      },
+      "3-10": {
+        "location": {
+          "name": "BK-Sue Redman"
+        },
+        "activity": {
+          "name": "suelikesblue@yahoo.com"
+        }
+      },
+      "3-11": {
+        "location": {
+          "name": "Faryn Einhorn"
+        },
+        "activity": {
+          "name": "faryneinhorn@gmail.com"
+        }
+      },
+      "3-12": {
+        "location": {
+          "name": "Sara Weinberg"
+        },
+        "activity": {
+          "name": "ohsofunny@gmail.com"
+        }
+      },
+      "3-13": {
+        "location": {
+          "name": "Larisa Perelman"
+        },
+        "activity": {
+          "name": "larisaperel@gmail.com"
+        }
+      },
+      "3-14": {
+        "location": {
+          "name": "Sameer Gupta"
+        },
+        "activity": {
+          "name": "smgupta@gmail.com"
+        }
+      },
+      "3-15": {
+        "location": {
+          "name": "Jimmy Chang"
+        },
+        "activity": {
+          "name": "jimmythechang@gmail.com"
+        }
+      },
+      "3-16": {
+        "location": {
+          "name": "LP- Lauren Oppelt"
+        },
+        "activity": {
+          "name": "laurenoppelt@gmail.com"
+        }
+      },
+      "3-17": {
+        "location": {
+          "name": "LP-Andrew Dugowson"
+        },
+        "activity": {
+          "name": "andrew.dugowson@gmail.com"
+        }
+      },
+      "3-18": {
+        "location": {
+          "name": "Tim Muir"
+        },
+        "activity": {
+          "name": "tmuir1@gmail.com"
+        }
+      },
+      "3-19": {
+        "location": {
+          "name": "Laura Fuesel"
+        },
+        "activity": {
+          "name": "lkfuesel@gmail.com"
+        }
+      },
+      "3-20": {
+        "location": {
+          "name": "Mike Hoy"
+        },
+        "activity": {
+          "name": "mikehoy3@gmail.com"
+        }
+      },
+      "3-21": {
+        "location": {
+          "name": "Antonia Raftu"
+        },
+        "activity": {
+          "name": "antoniaraftu@gmail.com"
+        }
+      },
+      "3-22": {
+        "location": {
+          "name": "Dylan Southard"
+        },
+        "activity": {
+          "name": "dylansouthard@gmail.com"
+        }
+      }
+    }
+  },
+  {
+    "name": "Atwater Village",
+    "city": "Atwater Village, CA",
+    "partySize": 16,
+    "stops": {
+      "0-0": {
+        "location": {
+          "name": "Kait McHugh"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "1-0": {
+        "location": {
+          "name": "ALIAS BOOKSTORE"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "1-1": {
+        "location": {
+          "name": "Tim DeRoche"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "2-0": {
+        "location": {
+          "name": "Aditi Khorana"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "2-1": {
+        "location": {
+          "name": "OUT OF THE CLOSET (Costume thing"
+        },
+        "activity": {
+          "name": "Create costume for hipster snow white and huntsman, take photos and send to Angie. Extra credit if you stay in costume the rest of the night"
+        }
+      },
+      "3-0": {
+        "location": {
+          "name": "Adam Fleck"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-1": {
+        "location": {
+          "name": "Sydney Fong"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-2": {
+        "location": {
+          "name": "GOlF COURSE (Some Putting Game)"
+        },
+        "activity": {
+          "name": "Putting game with clues for round of 8."
+        }
+      },
+      "3-3": {
+        "location": {
+          "name": "Josh Shapiro"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-4": {
+        "location": {
+          "name": "Liesel Allen-Yeager"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-5": {
+        "location": {
+          "name": "ROOST (Darts)"
+        },
+        "activity": {
+          "name": "play 3 games of darts- to 21, winner buys a round of shots"
+        }
+      },
+      "3-6": {
+        "location": {
+          "name": "Babara Howlin"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-7": {
+        "location": {
+          "name": "Heather Stanic"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-8": {
+        "location": {
+          "name": "GameHaus"
+        },
+        "activity": {
+          "name": "ACTIVITY"
+        }
+      },
+      "3-9": {
+        "location": {
+          "name": "Jeff Perry"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-10": {
+        "location": {
+          "name": "Ashley Warren"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-11": {
+        "location": {
+          "name": "Golden Road"
+        },
+        "activity": {
+          "name": "ACTIVITY"
+        }
+      },
+      "3-12": {
+        "location": {
+          "name": "Dave Haley"
+        },
+        "activity": {
+          "name": "Golden Road"
+        }
+      },
+      "3-13": {
+        "location": {
+          "name": "Anna Testa"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-14": {
+        "location": {
+          "name": "Chris Araujo"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-15": {
+        "location": {
+          "name": "John & Angela: Atwater (M: 5? F: 9?)"
+        },
+        "activity": {
+          "name": "Email"
+        }
+      },
+      "3-16": {
+        "location": {
+          "name": "Barbara Howlin"
+        },
+        "activity": {
+          "name": "bmhowlin@gmail.com"
+        }
+      },
+      "3-17": {
+        "location": {
+          "name": "Aditi Khorana"
+        },
+        "activity": {
+          "name": "aditi.khorana@gmail.com"
+        }
+      },
+      "3-18": {
+        "location": {
+          "name": "Liesel Allen-Yeager"
+        },
+        "activity": {
+          "name": "lallenyeager@gmail.com"
+        }
+      },
+      "3-19": {
+        "location": {
+          "name": "Christopher Araujo"
+        },
+        "activity": {
+          "name": "cornfed.chris@gmail.com"
+        }
+      },
+      "3-20": {
+        "location": {
+          "name": "Anna Testa"
+        },
+        "activity": {
+          "name": "testa_anna@hotmail.com"
+        }
+      },
+      "3-21": {
+        "location": {
+          "name": "Kaitlin McHugh"
+        },
+        "activity": {
+          "name": "kaitmchugh@gmail.com"
+        }
+      },
+      "3-22": {
+        "location": {
+          "name": "Ashley Warren"
+        },
+        "activity": {
+          "name": "AshleyWarrenDesign@gmail.com"
+        }
+      },
+      "3-23": {
+        "location": {
+          "name": "Heather Stanic (Ashley Warren +1)"
+        },
+        "activity": {
+          "name": "hstanic99@gmail.com"
+        }
+      },
+      "3-24": {
+        "location": {
+          "name": "Dave Haley (Anna Testa +1)"
+        },
+        "activity": {
+          "name": "davidshaley@gmail.com"
+        }
+      },
+      "3-25": {
+        "location": {
+          "name": "Sydney Fong"
+        },
+        "activity": {
+          "name": "sydney.devon.fong@gmail.com"
+        }
+      },
+      "3-26": {
+        "location": {
+          "name": "Josh Shapiro"
+        },
+        "activity": {
+          "name": "joshapir@hotmail.com"
+        }
+      },
+      "3-27": {
+        "location": {
+          "name": "Tim DeRoche"
+        },
+        "activity": {
+          "name": "timderoche@yahoo.com"
+        }
+      },
+      "3-28": {
+        "location": {
+          "name": "Jeff Perry"
+        },
+        "activity": {
+          "name": "jeffreyjamesperry@gmail.com"
+        }
+      },
+      "3-29": {
+        "location": {
+          "name": "Adam Fleck"
+        },
+        "activity": {
+          "name": "hoowahnee@aol.com"
+        }
+      }
+    }
+  },
+  {
+    "name": "Echo Park",
+    "city": "Echo Park, CA",
+    "partySize": 16,
+    "stops": {
+      "1-0": {
+        "location": {
+          "name": "ROBERT KESSLER"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "1-1": {
+        "location": {
+          "name": "NICOLE IIZUKA"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "2-0": {
+        "location": {
+          "name": "BEN ACKER"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "2-1": {
+        "location": {
+          "name": "Woodcat Coffee --> Laveta Terrace Stairs --> A's American Vintage"
+        },
+        "activity": {
+          "name": "MS"
+        }
+      },
+      "3-0": {
+        "location": {
+          "name": "JENNIFER MCCARTHY"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-1": {
+        "location": {
+          "name": "CHRIS PORTER"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-2": {
+        "location": {
+          "name": "Lassen's --> Senor Fish --> Sunday's Best Vintage"
+        },
+        "activity": {
+          "name": "MS"
+        }
+      },
+      "3-3": {
+        "location": {
+          "name": "MALLORY CLARK"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-4": {
+        "location": {
+          "name": "MAUREEN MCGLYNN"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-5": {
+        "location": {
+          "name": "Vons --> Hoy --> Stories"
+        },
+        "activity": {
+          "name": "KH"
+        }
+      },
+      "3-6": {
+        "location": {
+          "name": "CHRIS PORTER"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-7": {
+        "location": {
+          "name": "MELODY QIU"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-8": {
+        "location": {
+          "name": "AutoZone --> Cones --> Blue Collar Working Dog"
+        },
+        "activity": {
+          "name": "KH"
+        }
+      },
+      "3-9": {
+        "location": {
+          "name": "MEGGIE CHOI"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-10": {
+        "location": {
+          "name": "CARLOS PLALOZA"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-11": {
+        "location": {
+          "name": "Walgreen's --> across the street from the Lost Knight --> Out of the Closet"
+        },
+        "activity": {
+          "name": "KH"
+        }
+      },
+      "3-12": {
+        "location": {
+          "name": "ADRIANA FERNANDEZ"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-13": {
+        "location": {
+          "name": "DANIEL DE JESUS"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-14": {
+        "location": {
+          "name": "Happy Tom's --> Tree in the alley --> Paddle Boats"
+        },
+        "activity": {
+          "name": "MS"
+        }
+      },
+      "3-15": {
+        "location": {
+          "name": "(Courtney)"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-16": {
+        "location": {
+          "name": "(Jimmy)"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-17": {
+        "location": {
+          "name": "Buy More and Save --> Little Caesar's  --> Smart Objects (After Posing must make a scene and asked to leave)"
+        },
+        "activity": {
+          "name": "MS"
+        }
+      },
+      "3-18": {
+        "location": {
+          "name": "KRISTI WHISLER"
+        },
+        "activity": {
+          "name": ""
+        }
+      }
+    }
+  },
+  {
+    "name": "Central Hollywood",
+    "city": "Hollywood, CA",
+    "partySize": 16,
+    "stops": {
+      "0-0": {
+        "location": {
+          "name": "RACHEL"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "0-1": {
+        "location": {
+          "name": "Hollywood & Highland"
+        },
+        "activity": {
+          "name": "Propose to each other"
+        }
+      },
+      "1-0": {
+        "location": {
+          "name": "DAN"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "2-0": {
+        "location": {
+          "name": "SARAH"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "2-1": {
+        "location": {
+          "name": "Playmates of Hollywood"
+        },
+        "activity": {
+          "name": "Dress up as superheroes"
+        }
+      },
+      "2-2": {
+        "location": {
+          "name": "EMILY"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-0": {
+        "location": {
+          "name": "CELESTE"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-1": {
+        "location": {
+          "name": "Hollywood Costume"
+        },
+        "activity": {
+          "name": "Solve riddle to find product. Buy face paint"
+        }
+      },
+      "3-2": {
+        "location": {
+          "name": "LAUREN"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-3": {
+        "location": {
+          "name": "REBECCA"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-4": {
+        "location": {
+          "name": "Amoeba Music"
+        },
+        "activity": {
+          "name": "Leave music related compliments for strangers to find"
+        }
+      },
+      "3-5": {
+        "location": {
+          "name": "ADRIAAN"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-6": {
+        "location": {
+          "name": "ASHISH"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-7": {
+        "location": {
+          "name": "Selma Park"
+        },
+        "activity": {
+          "name": "Play hopscotch& have drink."
+        }
+      },
+      "3-8": {
+        "location": {
+          "name": "LANGDON"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-9": {
+        "location": {
+          "name": "ELIZABETH"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-10": {
+        "location": {
+          "name": "Goldwyn Library"
+        },
+        "activity": {
+          "name": "Dramatic reading of a trashy romance novel. Have a drink"
+        }
+      },
+      "3-11": {
+        "location": {
+          "name": "CAM"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-12": {
+        "location": {
+          "name": "SAMIA"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-13": {
+        "location": {
+          "name": "Bed Bath & Beyond"
+        },
+        "activity": {
+          "name": "Ridiculous product infomercial"
+        }
+      },
+      "3-14": {
+        "location": {
+          "name": "SUNHA"
+        },
+        "activity": {
+          "name": ""
+        }
+      }
+    }
+  },
+  {
+    "name": "Downtown LA 1",
+    "city": "Downtown Los Angeles, CA",
+    "partySize": 16,
+    "stops": {
+      "3-0": {
+        "location": {
+          "name": "Got confirmation back"
+        },
+        "activity": {
+          "name": "Sam & Marissa: Downtown 1 (M:4? F:9?)"
+        }
+      },
+      "3-1": {
+        "location": {
+          "name": "Y"
+        },
+        "activity": {
+          "name": "Melanie Lewis Perry"
+        }
+      },
+      "3-2": {
+        "location": {
+          "name": "y"
+        },
+        "activity": {
+          "name": "Eric Seilo"
+        }
+      },
+      "3-3": {
+        "location": {
+          "name": "y"
+        },
+        "activity": {
+          "name": "Adelina Salas"
+        }
+      },
+      "3-4": {
+        "location": {
+          "name": "y"
+        },
+        "activity": {
+          "name": "Sarah Howard"
+        }
+      },
+      "3-5": {
+        "location": {
+          "name": "y"
+        },
+        "activity": {
+          "name": "Marina Shifrin-LA Weekly"
+        }
+      },
+      "3-6": {
+        "location": {
+          "name": "y"
+        },
+        "activity": {
+          "name": "Monte LaForti (Anne LaForti +1)"
+        }
+      },
+      "3-7": {
+        "location": {
+          "name": "y"
+        },
+        "activity": {
+          "name": "Rebecca Chernoff?"
+        }
+      },
+      "3-8": {
+        "location": {
+          "name": "y"
+        },
+        "activity": {
+          "name": "Anne LaForti"
+        }
+      },
+      "3-9": {
+        "location": {
+          "name": "y"
+        },
+        "activity": {
+          "name": "Maureen Murphy"
+        }
+      },
+      "3-10": {
+        "location": {
+          "name": "y"
+        },
+        "activity": {
+          "name": "Dave Menon"
+        }
+      },
+      "3-11": {
+        "location": {
+          "name": "y"
+        },
+        "activity": {
+          "name": "Josh Schecheter"
+        }
+      },
+      "3-12": {
+        "location": {
+          "name": "y"
+        },
+        "activity": {
+          "name": "Dana Reinisch"
+        }
+      },
+      "3-13": {
+        "location": {
+          "name": "y"
+        },
+        "activity": {
+          "name": "William Reed"
+        }
+      },
+      "3-14": {
+        "location": {
+          "name": "y"
+        },
+        "activity": {
+          "name": "Liz Kenny"
+        }
+      }
+    }
+  },
+  {
+    "name": "Downtown LA 2",
+    "city": "Downtown Los Angeles, CA",
+    "partySize": 16,
+    "stops": {
+      "1-0": {
+        "location": {
+          "name": "Taylor Coffmann - Black"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "1-1": {
+        "location": {
+          "name": "Biltmore"
+        },
+        "activity": {
+          "name": "bathroom question"
+        }
+      },
+      "1-2": {
+        "location": {
+          "name": "Carlos Cespedes - Jerry"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "1-3": {
+        "location": {
+          "name": "Kathleen Stetson - Jay-Z"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "1-4": {
+        "location": {
+          "name": "Quincinera or Bridal Shop.  Try on dresses"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "2-0": {
+        "location": {
+          "name": "Lorraine Yurshansky - Hammerstein"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-0": {
+        "location": {
+          "name": "Simone DeRoche - Michelle"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-1": {
+        "location": {
+          "name": "Last Bookstore"
+        },
+        "activity": {
+          "name": "Find clue in book"
+        }
+      },
+      "3-2": {
+        "location": {
+          "name": "Anna Dietzen - Maverick"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-3": {
+        "location": {
+          "name": "Andrew Russo - Starsky"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-4": {
+        "location": {
+          "name": "GCM"
+        },
+        "activity": {
+          "name": "clue is hidden in ladies bathroom"
+        }
+      },
+      "3-5": {
+        "location": {
+          "name": "Daphne Brusso - Lucy"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-6": {
+        "location": {
+          "name": "Dana Sorman - Hutch"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-7": {
+        "location": {
+          "name": "Jewelry store on broadway"
+        },
+        "activity": {
+          "name": "ring evaluation"
+        }
+      },
+      "3-8": {
+        "location": {
+          "name": "Brett Fallentine - Beyonce"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-9": {
+        "location": {
+          "name": "Bob Kundrat - Goose"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-10": {
+        "location": {
+          "name": "Vintage Store"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-11": {
+        "location": {
+          "name": "Roy Lenn - Tom"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-12": {
+        "location": {
+          "name": "Robin Jones - Barack"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-13": {
+        "location": {
+          "name": "Japanese Bookstore"
+        },
+        "activity": {
+          "name": "Ask for a book in japanese, find partner in section"
+        }
+      },
+      "3-14": {
+        "location": {
+          "name": "Alex Chernoff - Desi"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-15": {
+        "location": {
+          "name": "Jon Button - Decker"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-16": {
+        "location": {
+          "name": "Union Station"
+        },
+        "activity": {
+          "name": "where a red accent,meet in waiting room, take subway"
+        }
+      },
+      "3-17": {
+        "location": {
+          "name": "Susanna Fogel - Rodgers"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-18": {
+        "location": {
+          "name": "JB & Lola: Downtown 2 (M:6? F:8?)"
+        },
+        "activity": {
+          "name": "Email"
+        }
+      },
+      "3-19": {
+        "location": {
+          "name": "Carlos Cespedes"
+        },
+        "activity": {
+          "name": "cmcd8822@gmail.com"
+        }
+      },
+      "3-20": {
+        "location": {
+          "name": "Anna Dietzen"
+        },
+        "activity": {
+          "name": "annadietzen@yahoo.com"
+        }
+      },
+      "3-21": {
+        "location": {
+          "name": "Roy Lenn"
+        },
+        "activity": {
+          "name": "ralenn@gmail.com"
+        }
+      },
+      "3-22": {
+        "location": {
+          "name": "Jon Button (Terryn Westbrook +1)"
+        },
+        "activity": {
+          "name": "Jbutton@mac.com"
+        }
+      },
+      "3-23": {
+        "location": {
+          "name": "Dana Sorman"
+        },
+        "activity": {
+          "name": "dlsorman@me.com"
+        }
+      },
+      "3-24": {
+        "location": {
+          "name": "Alex Chernoff"
+        },
+        "activity": {
+          "name": "Afchernoff@gmail.com"
+        }
+      },
+      "3-25": {
+        "location": {
+          "name": "Lorraine Yurshansky"
+        },
+        "activity": {
+          "name": "lorraine.yurshansky@gmail.com"
+        }
+      },
+      "3-26": {
+        "location": {
+          "name": "Brett Fallentine (maybe sick?)"
+        },
+        "activity": {
+          "name": "brettaf@gmail.com"
+        }
+      },
+      "3-27": {
+        "location": {
+          "name": "Taylor Coffman"
+        },
+        "activity": {
+          "name": "taylorannecoff@hotmail.com"
+        }
+      },
+      "3-28": {
+        "location": {
+          "name": "Kathleen Stetson"
+        },
+        "activity": {
+          "name": "kathleenstetson@gmail.com"
+        }
+      },
+      "3-29": {
+        "location": {
+          "name": "Andrew Russo"
+        },
+        "activity": {
+          "name": "andrusso50@gmail.com"
+        }
+      },
+      "3-30": {
+        "location": {
+          "name": "Daphne Brusso"
+        },
+        "activity": {
+          "name": "missmosdaph@gmail.com"
+        }
+      },
+      "3-31": {
+        "location": {
+          "name": "Simone DeRoche"
+        },
+        "activity": {
+          "name": "simonederoche@gmail.com"
+        }
+      },
+      "3-32": {
+        "location": {
+          "name": "Bob Kundrat"
+        },
+        "activity": {
+          "name": "bobkundrat@gmail.com"
+        }
+      }
+    }
+  },
+  {
+    "name": "Silver Lake Classic",
+    "city": "Silver Lake, CA",
+    "partySize": 16,
+    "stops": {
+      "1-0": {
+        "location": {
+          "name": "Bank of America / Silverlake Wine"
+        },
+        "activity": {
+          "name": "Each arrives in bank parking lots and gets a clue revealing their partner. They meet and head to Silverlake Wine to find a pre-selected bottle of wine to purchase."
+        }
+      },
+      "2-0": {
+        "location": {
+          "name": "Silverlake Library / Rockaway Records"
+        },
+        "activity": {
+          "name": "They meet at Rockaway.  They find the pre-selected album with a clue taped to the back.  This takes them next door to the library to check out a book or poems."
+        }
+      },
+      "3-0": {
+        "location": {
+          "name": "Music Box Stairs"
+        },
+        "activity": {
+          "name": "Cari has a sign that says \"Chris where are you?  Chris has a sign that says \"Cari I'm right here\"    Take a picture of the signs and post them.  They meet and follow the map up the Music Box Stairs a few blocks to the next set of stairs.  They play a game of hopscotch 1/2 way through."
+        }
+      },
+      "3-1": {
+        "location": {
+          "name": "99 cent Store"
+        },
+        "activity": {
+          "name": "Rob finds an envelope that reads \"Welcome to LA Gloria\"  They meet and enter 99 Cent store.  They purchase items."
+        }
+      },
+      "3-2": {
+        "location": {
+          "name": "Kristy Gibson"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-3": {
+        "location": {
+          "name": "Steve Ellis"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-4": {
+        "location": {
+          "name": "Jessica Schmidt"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-5": {
+        "location": {
+          "name": "Stories Books & Cafe"
+        },
+        "activity": {
+          "name": "find Moby Dick by Herman Melville in the Fiction section"
+        }
+      },
+      "3-6": {
+        "location": {
+          "name": "Michael Weintraub"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-7": {
+        "location": {
+          "name": "Erica Gray"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-8": {
+        "location": {
+          "name": "Family Arcade (870 N Vermont)"
+        },
+        "activity": {
+          "name": "meet at OutRun2SP, sit in chair.  play a round with hidden tokens"
+        }
+      },
+      "3-9": {
+        "location": {
+          "name": "William Peterson"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-10": {
+        "location": {
+          "name": "Abby Miller"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-11": {
+        "location": {
+          "name": "Bellevue Rec Center"
+        },
+        "activity": {
+          "name": "find chalk, draw self portrait, post picture"
+        }
+      },
+      "3-12": {
+        "location": {
+          "name": "Emily Hogan"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-13": {
+        "location": {
+          "name": "George & Lindsay: Silverlake 2 (M: 6, F: 7)"
+        },
+        "activity": {
+          "name": "Email"
+        }
+      },
+      "3-14": {
+        "location": {
+          "name": "Cari Carmean"
+        },
+        "activity": {
+          "name": "caricarmean@gmail.com"
+        }
+      },
+      "3-15": {
+        "location": {
+          "name": "Sharon Oster"
+        },
+        "activity": {
+          "name": "sharon.b.oster@gmail.com"
+        }
+      },
+      "3-16": {
+        "location": {
+          "name": "Erica Gray"
+        },
+        "activity": {
+          "name": "Ericalgray@gmail.com"
+        }
+      },
+      "3-17": {
+        "location": {
+          "name": "Jessica Schmidt"
+        },
+        "activity": {
+          "name": "jess.d.schmidt@gmail.com"
+        }
+      },
+      "3-18": {
+        "location": {
+          "name": "Emily Hogan"
+        },
+        "activity": {
+          "name": "emilycghogan@gmail.com"
+        }
+      },
+      "3-19": {
+        "location": {
+          "name": "Steve Ellis"
+        },
+        "activity": {
+          "name": "steve@mmproductions.com"
+        }
+      },
+      "3-20": {
+        "location": {
+          "name": "Abby Miller"
+        },
+        "activity": {
+          "name": "miller_abby@hotmail.com"
+        }
+      },
+      "3-21": {
+        "location": {
+          "name": "Kristy Gibson"
+        },
+        "activity": {
+          "name": "kristygibson@sbcglobal.net"
+        }
+      },
+      "3-22": {
+        "location": {
+          "name": "Ryan Bergmann"
+        },
+        "activity": {
+          "name": "huskerberg@gmail.com"
+        }
+      },
+      "3-23": {
+        "location": {
+          "name": "Rob Lowry"
+        },
+        "activity": {
+          "name": "robertlowry4@gmail.com"
+        }
+      },
+      "3-24": {
+        "location": {
+          "name": "Chris Steffen (Abby Miller +1)"
+        },
+        "activity": {
+          "name": "steffen75@mac.com"
+        }
+      },
+      "3-25": {
+        "location": {
+          "name": "Gloria Oakes (Kathy Pick +1)"
+        },
+        "activity": {
+          "name": "gloriaswims@gmail.com"
+        }
+      },
+      "3-26": {
+        "location": {
+          "name": "Kathy Pick"
+        },
+        "activity": {
+          "name": "krphoto1@mac.com"
+        }
+      },
+      "3-27": {
+        "location": {
+          "name": "Michael Weintraub"
+        },
+        "activity": {
+          "name": "michael.r.weintraub@gmail.com"
+        }
+      },
+      "3-28": {
+        "location": {
+          "name": "William Peterson"
+        },
+        "activity": {
+          "name": "william@kingcakemedia.com"
+        }
+      }
+    }
+  },
+  {
+    "name": "Melrose Classic",
+    "city": "Melrose, Los Angeles, CA",
+    "partySize": 16,
+    "stops": {
+      "1-0": {
+        "location": {
+          "name": "SPORTIE LA"
+        },
+        "activity": {
+          "name": "-        take instagram of two of you together \u2013 text us to confirm \n-        TEXT:  find a clue in a shoe  (instructions on specific shoe)\ntake a trip down memory lane and think about the shoes you coveted so hard in high school.  To get to where you were today, you couldn\u2019t just think about shoes, though, you had to study. And what better place than at the libray. Text your snow patroler when you\u2019re on your way.  Be there by 5:30\nDISCUSSION TOPIC: what was your high school style?"
+        }
+      },
+      "2-0": {
+        "location": {
+          "name": "MEET AT EASTER ISLAND KOBE BRYANT / Headline Recrods"
+        },
+        "activity": {
+          "name": "Pick out a jam for the party / what was the first cd you bought"
+        }
+      },
+      "3-0": {
+        "location": {
+          "name": "JAPAN LA"
+        },
+        "activity": {
+          "name": "Grab weird candy for your 8 spot"
+        }
+      },
+      "2-1": {
+        "location": {
+          "name": "Gallery 1988"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "2-2": {
+        "location": {
+          "name": "$2 clothing store. (http://2dollarclothing.com/) 7713 Santa Monica blvd - MEET AT STUDS across the street"
+        },
+        "activity": {
+          "name": "Pick out something for your 4 spot"
+        }
+      },
+      "2-3": {
+        "location": {
+          "name": "Russian Souvenirs and gifts (7513 Santa Monica Blvd)"
+        },
+        "activity": {
+          "name": "Get a card for your 4 spot"
+        }
+      },
+      "1-1": {
+        "location": {
+          "name": "Meet at Banksy Bench / Proceed to Puzzle Zoo"
+        },
+        "activity": {
+          "name": "This certainly is a puzzling party. To find out your next location cross the street and spend $5 on the thing your grandmother would find the most confusing. Text us a picture for your next stop."
+        }
+      }
+    }
+  },
+  {
+    "name": "West Hollywood Classic",
+    "city": "West Hollywood, CA",
+    "partySize": 16,
+    "stops": {
+      "0-0": {
+        "location": {
+          "name": "17:00:00"
+        },
+        "activity": {
+          "name": "05:20:00"
+        }
+      },
+      "0-1": {
+        "location": {
+          "name": "Elvira"
+        },
+        "activity": {
+          "name": "Esqueda"
+        }
+      },
+      "1-0": {
+        "location": {
+          "name": "CAKE & ART"
+        },
+        "activity": {
+          "name": "Seductively eat cupcakes"
+        }
+      },
+      "1-1": {
+        "location": {
+          "name": "Kimberly"
+        },
+        "activity": {
+          "name": "Sellery"
+        }
+      },
+      "2-0": {
+        "location": {
+          "name": "Allison"
+        },
+        "activity": {
+          "name": "Keating"
+        }
+      },
+      "2-1": {
+        "location": {
+          "name": "MILLIONS OF MILKSHAKES"
+        },
+        "activity": {
+          "name": "Dance out front to Milkshake song on phone"
+        }
+      },
+      "3-0": {
+        "location": {
+          "name": "Tyler"
+        },
+        "activity": {
+          "name": "Hereford"
+        }
+      },
+      "3-1": {
+        "location": {
+          "name": "Guy"
+        },
+        "activity": {
+          "name": "Jackson"
+        }
+      },
+      "3-2": {
+        "location": {
+          "name": "PLEASURE CHEST"
+        },
+        "activity": {
+          "name": "Blow up condom and carry around"
+        }
+      },
+      "3-3": {
+        "location": {
+          "name": "Jeff"
+        },
+        "activity": {
+          "name": "Kendig"
+        }
+      },
+      "3-4": {
+        "location": {
+          "name": "Mina"
+        },
+        "activity": {
+          "name": "Shin"
+        }
+      },
+      "3-5": {
+        "location": {
+          "name": "HAMBURGER MARY'S"
+        },
+        "activity": {
+          "name": "Get boas and wear to find partner"
+        }
+      },
+      "3-6": {
+        "location": {
+          "name": "Natasha"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-7": {
+        "location": {
+          "name": "ADAM"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-8": {
+        "location": {
+          "name": "Crossroads Trading Company on Melrose"
+        },
+        "activity": {
+          "name": "Man wear somehting camo- Woman wears something leopard. After meeting dress one or both as a hipster war hero."
+        }
+      },
+      "3-9": {
+        "location": {
+          "name": "TABITHA"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-10": {
+        "location": {
+          "name": "JOSHUA"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-11": {
+        "location": {
+          "name": "American Superior Vintage on Melrose"
+        },
+        "activity": {
+          "name": "Meet by wearing huge sunglasses and trying on bowling shirts. Take and post photo of your interpretation of a scholarly drunken bowler. Clue given upon approval."
+        }
+      },
+      "3-12": {
+        "location": {
+          "name": "MAKI"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-13": {
+        "location": {
+          "name": "ANIL MARSAHAYAM"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-14": {
+        "location": {
+          "name": "Trader Joe's 3rd and Fairfax"
+        },
+        "activity": {
+          "name": "Get basket and put in one banana- Find partner who also has one banana in their basket. Go to coffee station and laugh hysterically(fake laugh until you real laugh) - clue revealed by irrate trader joes employee"
+        }
+      },
+      "3-15": {
+        "location": {
+          "name": "RAINY KERWIN"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-16": {
+        "location": {
+          "name": "Andrew"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-17": {
+        "location": {
+          "name": "The Grove - OUtside Barnes and Noble"
+        },
+        "activity": {
+          "name": "Jog in place and or dance and look out for your other dancing/jogging snowman- once found sing jingle bells and clue will be revealed by santas elf."
+        }
+      },
+      "3-18": {
+        "location": {
+          "name": "Sadie"
+        },
+        "activity": {
+          "name": ""
+        }
+      },
+      "3-19": {
+        "location": {
+          "name": "Molly & Johnny: Hollywood 2 (M: 5or4? F:9?)"
+        },
+        "activity": {
+          "name": "Email"
+        }
+      },
+      "3-20": {
+        "location": {
+          "name": "Angelica Triola"
+        },
+        "activity": {
+          "name": "anjelica.triola@gmail.com"
+        }
+      },
+      "3-21": {
+        "location": {
+          "name": "Briggs Hatton"
+        },
+        "activity": {
+          "name": "briggshatton@gmail.com"
+        }
+      },
+      "3-22": {
+        "location": {
+          "name": "Amber Halliman"
+        },
+        "activity": {
+          "name": "ahalliman@gmail.com"
+        }
+      },
+      "3-23": {
+        "location": {
+          "name": "Jasmine Zimmerman"
+        },
+        "activity": {
+          "name": "zimmerman.jasmine@gmail.com"
+        }
+      },
+      "3-24": {
+        "location": {
+          "name": "Bryn Woznicki"
+        },
+        "activity": {
+          "name": "thewoz@ymail.com"
+        }
+      },
+      "3-25": {
+        "location": {
+          "name": "Grady Miller (Faryn Einhorn +1)"
+        },
+        "activity": {
+          "name": "grady.miller@gmail.com"
+        }
+      },
+      "3-26": {
+        "location": {
+          "name": "Stacey Wiren"
+        },
+        "activity": {
+          "name": "staceywiren@yahoo.com"
+        }
+      },
+      "3-27": {
+        "location": {
+          "name": "Nikki Braendlin"
+        },
+        "activity": {
+          "name": "nikkibraendlin@gmail.com"
+        }
+      },
+      "3-28": {
+        "location": {
+          "name": "Rainy Kerwin"
+        },
+        "activity": {
+          "name": "rainykerwin@gmail.com"
+        }
+      },
+      "3-29": {
+        "location": {
+          "name": "Sadie Johnson"
+        },
+        "activity": {
+          "name": "lareine9@hotmail.com"
+        }
+      },
+      "3-30": {
+        "location": {
+          "name": "Joshua Johnson (Sadie Johnson +1)"
+        },
+        "activity": {
+          "name": "thetahealer@me.com"
+        }
+      },
+      "3-31": {
+        "location": {
+          "name": "Tabitha Stowell (Sadie Johnson +2)"
+        },
+        "activity": {
+          "name": "Tabstarlu@gmail.com"
+        }
+      },
+      "3-32": {
+        "location": {
+          "name": "Maki Deguchi"
+        },
+        "activity": {
+          "name": "makimakitokyo@hotmail.com"
+        }
+      },
+      "3-33": {
+        "location": {
+          "name": "Andrew Perez"
+        },
+        "activity": {
+          "name": "actorandrewperez@gmail.com"
+        }
+      },
+      "3-34": {
+        "location": {
+          "name": "Adam Lewin"
+        },
+        "activity": {
+          "name": "lewin.adam@gmail.com"
+        }
+      },
+      "3-35": {
+        "location": {
+          "name": "Anil Margsahayam"
+        },
+        "activity": {
+          "name": "anil03@gmail.com"
+        }
+      }
+    }
+  }
+];
+
+function renderTemplates() {
+  const grid = document.getElementById('templates-grid');
+  if (!grid) return;
+  grid.innerHTML = LA_TEMPLATES.map((t, i) => `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:all .15s"
+         onmouseover="this.style.borderColor='#e8c84a';this.style.background='rgba(232,200,74,.05)'"
+         onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'"
+         onclick="loadTemplate(${i})">
+      <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;margin-bottom:4px">${t.name}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:10px">${t.city}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span class="badge badge-blue">${t.partySize} people</span>
+        <span class="badge" style="background:rgba(255,255,255,.06);color:var(--muted)">${Object.keys(t.stops).length} stops</span>
+      </div>
+    </div>`).join('');
+}
+
+function loadTemplate(idx) {
+  const t = LA_TEMPLATES[idx];
+  if (!t) return;
+  if (!confirm(`Load "${t.name}" into Plan Party?\n\nThis will replace any current plan.`)) return;
+  
+  // Switch to plan tab
+  switchTab('plan');
+  
+  // Fill in fields
+  setTimeout(() => {
+    const nameEl = document.getElementById('plan-name');
+    const cityEl = document.getElementById('plan-city');
+    const sizeEl = document.getElementById('plan-size');
+    if (nameEl) nameEl.value = t.name;
+    if (cityEl) cityEl.value = t.city;
+    if (sizeEl) sizeEl.value = t.partySize || 16;
+    
+    // Store stops in planDraft
+    planDraft.name = t.name;
+    planDraft.city = t.city;
+    planDraft.size = t.partySize || 16;
+    planDraft.stops = t.stops;
+    
+    renderPlanStops();
+    showToast('Template loaded: ' + t.name + ' ✓');
+  }, 100);
+}
+
+let megaSelectedBrackets = [];
+
+function showCreateMega() {
+  document.getElementById('mega-create-form').style.display = 'block';
+  megaSelectedBrackets = [];
+  // Populate bracket list
+  const list = document.getElementById('mega-bracket-list');
+  list.innerHTML = (allParties || []).map(p => `
+    <div onclick="toggleMegaBracket('${p.id}', this)"
+         style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;padding:8px 14px;cursor:pointer;font-size:12px;transition:all .15s"
+         data-id="${p.id}">
+      ${p.name || '—'} <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">${p.city || ''}</span>
+    </div>`).join('');
+}
+
+function toggleMegaBracket(id, el) {
+  const idx = megaSelectedBrackets.indexOf(id);
+  if (idx >= 0) {
+    megaSelectedBrackets.splice(idx, 1);
+    el.style.borderColor = 'var(--border)';
+    el.style.background = 'rgba(255,255,255,.06)';
+    el.style.color = '#fff';
+  } else {
+    megaSelectedBrackets.push(id);
+    el.style.borderColor = '#e8c84a';
+    el.style.background = 'rgba(232,200,74,.1)';
+    el.style.color = '#e8c84a';
+  }
+}
+
+async function saveMegaEvent() {
+  const name = document.getElementById('mega-name').value.trim();
+  const keyword = document.getElementById('mega-keyword').value.trim().toUpperCase();
+  if (!name || !keyword) return showToast('Name and keyword required', 'error');
+  if (!megaSelectedBrackets.length) return showToast('Select at least one bracket', 'error');
+  try {
+    const res = await fetch('/api/mega-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+      body: JSON.stringify({ name, keyword, bracket_ids: megaSelectedBrackets })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Mega event created! Keyword: ' + keyword);
+      document.getElementById('mega-create-form').style.display = 'none';
+      loadMegaEvents();
+    } else {
+      showToast('Error: ' + (data.error || 'unknown'), 'error');
+    }
+  } catch(e) { showToast('Failed to create', 'error'); }
+}
+
+async function loadMegaEvents() {
+  try {
+    const res = await fetch('/api/mega-event', { headers: { 'x-admin-token': adminToken } });
+    const data = await res.json();
+    const list = document.getElementById('mega-list');
+    if (!list) return;
+    const events = data.mega_events || [];
+    if (!events.length) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:13px;font-style:italic">No mega events yet — create one above.</div>';
+      return;
+    }
+    list.innerHTML = events.map(e => `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px">${e.name}</div>
+            <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--amber);margin-top:2px">Keyword: ${e.keyword}</div>
+          </div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">${(e.bracket_ids||[]).length} brackets</div>
+        </div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">
+          Signup: <span style="color:rgba(255,255,255,.6)">snowball-party.vercel.app/join/${e.keyword}</span>
+        </div>
+      </div>`).join('');
+  } catch(e) { console.error(e); }
+}
+
+// ── MEGA EVENTS ─────────────────────────────────────────────────────────────
+async function loadMegaEvents() {
+  try {
+    const res = await fetch('/api/get-mega-events', { headers: { 'x-admin-token': adminToken } });
+    const data = await res.json();
+    const el = document.getElementById('mega-list');
+    if (!data.megaEvents?.length) {
+      el.innerHTML = '<div style="color:var(--muted);font-size:13px;font-style:italic">No mega events yet — create one above.</div>';
+      return;
+    }
+    el.innerHTML = data.megaEvents.map(m => `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-weight:700;font-size:14px">${m.name}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--amber);margin-top:3px">🔑 ${m.keyword}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">${(m.party_ids||[]).length} brackets linked</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <a href="/join/${m.keyword}" target="_blank" style="font-size:11px;color:var(--blue-light);border:1px solid rgba(0,88,250,.3);padding:5px 10px;border-radius:5px;text-decoration:none">Signup Link ↗</a>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    document.getElementById('mega-list').innerHTML = '<div style="color:red;font-size:12px">Failed to load</div>';
+  }
+}
+
+function showCreateMega() {
+  // Populate party checkboxes
+  const el = document.getElementById('mega-party-checkboxes');
+  el.innerHTML = (allParties || []).map(p => `
+    <label style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:6px;padding:8px 10px;cursor:pointer">
+      <input type="checkbox" value="${p.id}" style="cursor:pointer">
+      <div>
+        <div style="font-size:12px;font-weight:500">${p.name || '—'}</div>
+        <div style="font-size:10px;color:var(--muted)">${p.city || ''} · ${p.keyword || 'no keyword'}</div>
+      </div>
+    </label>`).join('');
+  document.getElementById('mega-create-form').style.display = 'block';
+}
+
+async function saveMegaEvent() {
+  const name = document.getElementById('mega-name').value.trim();
+  const keyword = document.getElementById('mega-keyword').value.trim().toUpperCase();
+  const checked = [...document.querySelectorAll('#mega-party-checkboxes input:checked')].map(i => i.value);
+  if (!name) { showToast('Enter an event name', 'error'); return; }
+  if (!keyword) { showToast('Enter a keyword', 'error'); return; }
+  if (!checked.length) { showToast('Select at least one bracket', 'error'); return; }
+
+  try {
+    const res = await fetch('/api/save-mega-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+      body: JSON.stringify({ name, keyword, partyIds: checked })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Mega event saved! ✓');
+      document.getElementById('mega-create-form').style.display = 'none';
+      loadMegaEvents();
+    } else {
+      showToast('Save failed: ' + (data.error || 'unknown'), 'error');
+    }
+  } catch(e) {
+    showToast('Save failed', 'error');
+  }
+}
+</script>
+
+<!-- SNOWBALLER PROFILE MODAL -->
+<div id="sb-modal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);align-items:center;justify-content:center" onclick="if(event.target===this)closeSbModal()">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;margin:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border)">
+      <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:16px" id="sb-modal-name">Snowballer</div>
+      <button onclick="closeSbModal()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">×</button>
+    </div>
+    <div id="sb-modal-body" style="padding:24px">Loading...</div>
+  </div>
+</div>
+</body>
+</html>

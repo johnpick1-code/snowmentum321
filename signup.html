@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join Snowmentum</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a1628;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Sans', sans-serif;
+    padding: 24px;
+  }
+
+  .card {
+    background: #0f1e36;
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 20px;
+    padding: 40px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 24px 64px rgba(0,0,0,.5);
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: #fff;
+    letter-spacing: 5px;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  .tagline {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,.3);
+    letter-spacing: 3px;
+    text-align: center;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  .party-banner {
+    background: rgba(29,61,29,.4);
+    border: 1px solid rgba(46,92,46,.5);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    display: none;
+  }
+  .party-banner.visible { display: block; }
+  .party-banner-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: rgba(245,240,224,.4);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .party-banner-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: #f5f0e0;
+    letter-spacing: 2px;
+  }
+
+  label {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,.4);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+  }
+
+  input {
+    width: 100%;
+    background: rgba(255,255,255,.06);
+    border: 1.5px solid rgba(255,255,255,.1);
+    border-radius: 10px;
+    padding: 13px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: #fff;
+    outline: none;
+    transition: border-color .15s;
+    margin-bottom: 18px;
+  }
+  input::placeholder { color: rgba(255,255,255,.2); }
+  input:focus { border-color: #e8c84a; }
+
+  .btn {
+    width: 100%;
+    background: #1d3d1d;
+    border: 1.5px solid #2e5c2e;
+    color: #f5f0e0;
+    border-radius: 10px;
+    padding: 15px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all .15s;
+    margin-top: 4px;
+  }
+  .btn:hover { background: #244d24; border-color: #3a733a; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  .error {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: #ff7c7c;
+    text-align: center;
+    margin-top: 12px;
+    display: none;
+  }
+  .error.visible { display: block; }
+
+  /* Confirmation screen */
+  .confirm {
+    display: none;
+    text-align: center;
+  }
+  .confirm.visible { display: block; }
+  .confirm-emoji { font-size: 56px; margin-bottom: 16px; }
+  .confirm-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    color: #fff;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+  .confirm-sub {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: rgba(255,255,255,.5);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+  .confirm-sms {
+    background: rgba(29,61,29,.3);
+    border: 1px solid rgba(46,92,46,.4);
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: rgba(245,240,224,.7);
+    line-height: 1.7;
+  }
+
+  .form-section { display: block; }
+  .form-section.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">SNOWMENTUM</div>
+  <div class="tagline">Party Signup</div>
+
+  <!-- Party banner (shown if keyword in URL) -->
+  <div class="party-banner" id="party-banner">
+    <div class="party-banner-label">You're joining</div>
+    <div class="party-banner-name" id="party-banner-name">—</div>
+  </div>
+
+  <!-- Form -->
+  <div class="form-section" id="form-section">
+    <label for="inp-name">Your Name</label>
+    <input id="inp-name" type="text" placeholder="First Last" autocomplete="name">
+
+    <label for="inp-phone">Phone Number</label>
+    <input id="inp-phone" type="tel" placeholder="312-555-0101" autocomplete="tel">
+
+    <label for="inp-email">Email <span style="color:rgba(255,255,255,.2);font-size:9px">(optional)</span></label>
+    <input id="inp-email" type="email" placeholder="you@email.com" autocomplete="email">
+
+    <button class="btn" id="join-btn" onclick="submitSignup()">JOIN THE PARTY</button>
+    <div class="error" id="form-error"></div>
+  </div>
+
+  <!-- Confirmation -->
+  <div class="confirm" id="confirm-section">
+    <div class="confirm-emoji">🎉</div>
+    <div class="confirm-title">YOU'RE IN!</div>
+    <div class="confirm-sub" id="confirm-sub">Check your phone — we just sent you the details.</div>
+    <div class="confirm-sms" id="confirm-sms">
+      📱 Details sent via SMS to your phone.<br>
+      When you arrive at your stop, text the keyword to check in.
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = 'https://snowball-party.vercel.app/api/join';
+
+  // Read keyword from URL ?k=KEYWORD or /join/KEYWORD
+  function getKeyword() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('k')) return params.get('k').toUpperCase();
+    if (params.get('keyword')) return params.get('keyword').toUpperCase();
+    const parts = window.location.pathname.split('/');
+    const last = parts[parts.length - 1];
+    if (last && last.length > 2 && last !== 'signup') return last.toUpperCase();
+    return null;
+  }
+
+  const keyword = getKeyword();
+  if (keyword) {
+    document.getElementById('party-banner').classList.add('visible');
+    document.getElementById('party-banner-name').textContent = keyword;
+  }
+
+  async function submitSignup() {
+    const name  = document.getElementById('inp-name').value.trim();
+    const phone = document.getElementById('inp-phone').value.trim();
+    const email = document.getElementById('inp-email').value.trim();
+    const errEl = document.getElementById('form-error');
+    const btn   = document.getElementById('join-btn');
+
+    errEl.classList.remove('visible');
+
+    if (!name) { showError('Please enter your name'); return; }
+    if (!phone || phone.replace(/\D/g,'').length < 10) { showError('Please enter a valid phone number'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'JOINING...';
+
+    try {
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone, email, keyword })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        document.getElementById('form-section').classList.add('hidden');
+        const confirmSection = document.getElementById('confirm-section');
+        confirmSection.classList.add('visible');
+        document.getElementById('confirm-sub').textContent =
+          `Welcome ${data.name}! Check your phone — we just texted you details for ${data.partyName}.`;
+        document.getElementById('confirm-sms').innerHTML =
+          `📱 SMS sent! When you arrive at your stop, text <strong>${keyword || 'SNOWBALL'}</strong> to check in.`;
+      } else {
+        showError(data.error || 'Something went wrong. Try again.');
+        btn.disabled = false;
+        btn.textContent = 'JOIN THE PARTY';
+      }
+    } catch(e) {
+      showError('Connection error. Please try again.');
+      btn.disabled = false;
+      btn.textContent = 'JOIN THE PARTY';
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('form-error');
+    el.textContent = msg;
+    el.classList.add('visible');
+  }
+
+  // Enter key submits
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitSignup();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/events", "destination": "/events.html" },
+    { "source": "/join/:keyword", "destination": "/join.html" },
+    { "source": "/join", "destination": "/join.html" },
+    { "source": "/signup", "destination": "/signup.html" }
+  ],
+  "crons": [
+    { "path": "/api/ping", "schedule": "*/5 * * * *" }
+  ]
+}
