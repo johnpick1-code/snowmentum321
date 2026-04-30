@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snowmentum — Vol. 1</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#1a1208;--red:#cc2222;--blue:#1a3a8b;--gold:#c8a84b;--dark-green:#1a3a1a;
+  --paper:rgba(235,226,209,0.94);--b:rgba(26,18,8,.15);--b2:rgba(26,18,8,.28);
+  --paper-solid:#ebe2cc;
+}
+body{background:#1a1a1a;font-family:'Playfair Display',Georgia,serif;color:var(--ink);}
+
+/* ── TOOLBAR ── */
+.bar{background:#111;padding:8px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;font-family:'DM Mono',monospace;font-size:9px;gap:12px;}
+.bar-title{color:rgba(255,255,255,.8);letter-spacing:2px;}
+.bar-right{display:flex;gap:8px;align-items:center;}
+.btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.65);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;padding:5px 12px;cursor:pointer;}
+.btn:hover{background:rgba(255,255,255,.18);color:#fff;}
+.btn-gold{background:rgba(200,168,75,.18);border-color:rgba(200,168,75,.4);color:#e8c84a;}
+.btn-red{background:rgba(204,34,34,.4);border-color:var(--red);color:#fff;}
+.sf{color:#6dd96d;font-size:8px;opacity:0;transition:opacity .3s;letter-spacing:1px;}
+
+/* ── EDIT PANEL ── */
+.ep{position:fixed;right:0;top:40px;width:288px;height:calc(100vh - 40px);background:#1a1a1a;border-left:1px solid rgba(255,255,255,.1);z-index:300;transform:translateX(100%);transition:transform .2s;display:flex;flex-direction:column;overflow:hidden;}
+.ep.open{transform:translateX(0);}
+.ep-hd{background:#111;padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.ep-ttl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.6);}
+.ep-x{background:none;border:none;color:rgba(255,255,255,.4);font-size:18px;cursor:pointer;line-height:1;padding:0 4px;}
+.ep-x:hover{color:#fff;}
+.ep-sc{padding:14px;overflow-y:auto;flex:1;}
+.ef{margin-bottom:12px;}
+.el{display:block;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;}
+.ei,.et{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:2px;padding:7px 9px;font-family:'Playfair Display',serif;font-size:12px;color:#fff;outline:none;}
+.ei:focus,.et:focus{border-color:var(--gold);}
+.ei::placeholder,.et::placeholder{color:rgba(255,255,255,.2);}
+.et{resize:vertical;min-height:70px;line-height:1.6;}
+.ei-sm{font-family:'DM Mono',monospace;font-size:10px;padding:6px 8px;}
+.ediv{height:1px;background:rgba(255,255,255,.08);margin:12px 0;}
+.ep-img-lbl{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.05);border:1px dashed rgba(255,255,255,.18);border-radius:2px;padding:8px 10px;cursor:pointer;color:rgba(255,255,255,.4);font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;}
+.ep-img-lbl:hover{border-color:rgba(255,255,255,.35);color:#fff;}
+.ep-prev{width:100%;border-radius:2px;display:block;margin-top:7px;}
+.ep-clr{background:none;border:none;font-family:'DM Mono',monospace;font-size:7px;color:rgba(255,255,255,.3);cursor:pointer;margin-top:3px;display:none;}
+.ep-clr:hover{color:#ff7c7c;}
+.ep-apply{width:100%;background:var(--red);border:none;color:#fff;padding:10px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;cursor:pointer;margin-top:4px;}
+.ep-apply:hover{background:#a01818;}
+
+/* ── PAGES ── */
+.pages{max-width:820px;margin:0 auto;padding:16px 0 60px;}
+
+/* ════════════════════ PAGE 1 — AIRMAIL BACKGROUND ════════════════════ */
+.page-1{
+  position:relative;
+  /* Maintain 1545:2000 ratio */
+  padding-bottom:129.45%;
+  background:url('/Assets/airmail-bg.jpg') top center/100% auto no-repeat;
+  margin-bottom:32px;
+}
+.page-1-inner{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+}
+/* Transparent spacer exactly matching masthead height (18% of image) */
+.p1-mh-gap{ height:18%; flex-shrink:0; }
+
+/* ════════════════════ PAGES 2–12 — PLAIN PAPER ════════════════════ */
+.page-n{
+  background:url('/Assets/airmail-bg.jpg') top center/100% auto no-repeat;
+  border:none;
+  margin-bottom:32px;
+  padding-bottom:129.45%;
+  position:relative;
+}
+/* Free pages: no airmail border, clean paper */
+.page-free{
+  background:rgba(235,226,209,0.97);
+  border:none;
+  margin-bottom:32px;
+  padding-bottom:129.45%;
+  position:relative;
+}
+.page-n-inner{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ── DATELINE BAR (page 1 only, sits right under masthead) ── */
+.dateline-wrap{
+  flex-shrink:0;
+  padding:0 7%;
+}
+.dateline{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 18px;
+  background:rgba(235,226,209,0.97);
+  border-top:2.5px solid rgba(26,18,8,.8);
+  border-bottom:2.5px solid rgba(26,18,8,.8);
+  border-left:1px solid rgba(26,18,8,.3);
+  border-right:1px solid rgba(26,18,8,.3);
+  gap:8px;
+}
+.dl-side{
+  font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:1px;
+  color:rgba(26,18,8,.7);white-space:nowrap;min-width:120px;
+}
+.dl-side.r{text-align:right;}
+.dl-center{
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:14px;color:rgba(26,18,8,.6);text-align:center;flex:1;letter-spacing:.3px;
+}
+
+/* ── INNER PAGES HEADER ── */
+.pg-hd{
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 18px 7px;
+  background:rgba(235,226,209,0.97);
+  border-top:2.5px solid rgba(26,18,8,.8);
+  border-bottom:2.5px solid rgba(26,18,8,.8);
+  border-left:1px solid rgba(26,18,8,.3);
+  border-right:1px solid rgba(26,18,8,.3);
+  margin:0 7%;
+}
+.pg-hd-wordmark{
+  font-family:'Playfair Display',serif;font-weight:900;font-style:italic;
+  font-size:22px;color:var(--ink);letter-spacing:-0.5px;
+}
+.pg-hd-meta{
+  text-align:center;
+  font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:1.5px;
+  color:rgba(26,18,8,.5);line-height:1.6;
+}
+.pg-hd-right{
+  text-align:right;
+  font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:1px;
+  color:rgba(26,18,8,.5);line-height:1.6;
+}
+
+/* ── INNER PAGES FOOTER ── */
+.pg-ft{
+  flex-shrink:0;margin-top:auto;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 18px;
+  background:rgba(235,226,209,0.97);
+  border-top:2.5px solid rgba(26,18,8,.8);
+  border-bottom:2.5px solid rgba(26,18,8,.8);
+  border-left:1px solid rgba(26,18,8,.3);
+  border-right:1px solid rgba(26,18,8,.3);
+  margin:auto 7% 0;
+  font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1.5px;
+  color:rgba(26,18,8,.55);text-transform:uppercase;
+}
+
+/* ── SECTION BAR ── */
+.sec-bar{
+  flex-shrink:0;
+  background:rgba(26,18,8,.88);color:rgba(235,226,209,.9);
+  font-family:'DM Mono',monospace;font-size:7px;letter-spacing:3px;
+  text-transform:uppercase;padding:3px 18px;
+  display:flex;justify-content:space-between;
+  margin:0 7%;
+}
+
+/* ── ARTICLE AREA ── */
+.art-area{flex:1;display:flex;flex-direction:column;padding:0 7% 5%;overflow:hidden;min-height:0;}
+.zone-row{display:flex;flex:1;min-height:0;overflow:hidden;}
+.zone-row+.zone-row .zone{border-top:none;}
+
+/* ── ZONES ── */
+.zone{
+  background:var(--paper);border:1px solid var(--b2);
+  cursor:pointer;flex:1;position:relative;overflow:hidden;min-height:100px;
+}
+.zone+.zone{border-left:none;}
+.zone:hover{outline:2px solid rgba(204,34,34,.45);outline-offset:-2px;}
+.zone.ed{outline:2px solid var(--red);outline-offset:-2px;}
+.zone.has-content .hint{display:none!important;}
+.zone.w2{flex:2;}.zone.w3{flex:3;}
+.hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'DM Mono',monospace;font-size:7px;letter-spacing:1px;color:rgba(26,18,8,.2);white-space:nowrap;pointer-events:none;}
+
+/* ── RENDERED CONTENT ── */
+.rc{padding:8px 10px;height:100%;overflow:hidden;}
+.rc-kicker{font-family:'DM Mono',monospace;font-size:6.5px;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:2px;}
+.rc-hed{font-family:'Playfair Display',serif;font-weight:900;line-height:1.05;margin-bottom:8px;}
+.rc-hed.xl{font-size:clamp(20px,3.5vw,40px);}
+.rc-hed.lg{font-size:clamp(15px,2.5vw,26px);}
+.rc-hed.md{font-size:clamp(12px,1.8vw,18px);}
+.rc-hed.sm{font-size:12px;}
+.rc-byline{font-family:'DM Mono',monospace;font-size:6px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(26,18,8,.38);margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid var(--b);}
+.rc-img{width:100%;display:block;margin-top:6px;margin-bottom:5px;}
+.rc-cap{font-family:'DM Mono',monospace;font-size:6px;color:rgba(26,18,8,.35);font-style:italic;text-align:center;margin-bottom:4px;}
+.rc-body{font-family:'Playfair Display',serif;font-size:10.5px;line-height:1.7;color:rgba(26,18,8,.82);text-align:justify;}
+.rc-body.c2{column-count:2;column-gap:12px;}
+.rc-body p+p{margin-top:6px;}
+.rc-vid{display:inline-block;background:var(--red);color:#fff;font-family:'DM Mono',monospace;font-size:6.5px;letter-spacing:1px;padding:3px 9px;text-decoration:none;margin-top:5px;}
+.rc-imgs-main{width:100%;display:block;margin-top:6px;margin-bottom:3px;}
+.rc-imgs-thumbs{display:flex;gap:3px;margin-bottom:5px;}
+.rc-imgs-thumbs img{flex:1;min-width:0;object-fit:cover;height:50px;}
+.rc-qr{display:flex;align-items:center;gap:6px;margin-top:6px;padding-top:5px;border-top:1px solid rgba(26,18,8,.1);}
+.rc-qr img{width:36px;height:36px;flex-shrink:0;}
+.rc-qr-url{font-family:'DM Mono',monospace;font-size:5.5px;color:rgba(26,18,8,.35);word-break:break-all;line-height:1.4;}
+.ep-imgs-grid{display:flex;flex-direction:column;gap:6px;margin-top:6px;}
+.ep-img-slot{display:flex;align-items:center;gap:6px;}
+.ep-img-slot-prev{width:40px;height:40px;object-fit:cover;border-radius:2px;border:1px solid rgba(255,255,255,.15);flex-shrink:0;}
+.ep-img-slot-rm{background:none;border:none;color:rgba(255,80,80,.6);cursor:pointer;font-size:12px;padding:0 4px;}
+.rc-vid:hover{background:#a01818;}
+
+/* ── SETTINGS PANEL ── */
+.sp{position:fixed;left:0;top:40px;width:280px;height:calc(100vh - 40px);background:#1a1a1a;border-right:1px solid rgba(255,255,255,.1);z-index:300;transform:translateX(-100%);transition:transform .2s;display:flex;flex-direction:column;overflow:hidden;}
+.sp.open{transform:translateX(0);}
+.sp-hd{background:#111;padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.sp-ttl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.6);}
+.sp-x{background:none;border:none;color:rgba(255,255,255,.4);font-size:18px;cursor:pointer;line-height:1;}
+.sp-x:hover{color:#fff;}
+.sp-sc{padding:14px;overflow-y:auto;flex:1;}
+.sp-section{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,.06);}
+.sp-section:first-child{margin-top:0;}
+.lp{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;display:none;align-items:center;justify-content:center;}
+.lp.open{display:flex;}
+.lp-box{background:#1a1a1a;border:1px solid rgba(255,255,255,.12);border-radius:8px;width:640px;max-width:95vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;}
+.lp-hd{background:#111;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.lp-ttl{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,.7);}
+.lp-x{background:none;border:none;color:rgba(255,255,255,.4);font-size:22px;cursor:pointer;line-height:1;padding:0;}
+.lp-x:hover{color:#fff;}
+.lp-body{padding:20px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px;}
+.lp-row{display:grid;grid-template-columns:36px 1fr auto auto auto auto auto;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:10px 12px;}
+.lp-row.lp-free{border-color:rgba(0,140,80,.3);background:rgba(0,140,80,.06);}
+.lp-pgnum{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.3);font-weight:700;}
+.lp-secs{font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,.65);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lp-secs.free{color:rgba(0,200,130,.8);}
+.lp-sel{font-family:'DM Mono',monospace;font-size:9px;background:#111;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);padding:4px 8px;border-radius:4px;cursor:pointer;}
+.lp-btn{font-family:'DM Mono',monospace;font-size:10px;background:none;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.4);padding:4px 8px;border-radius:4px;cursor:pointer;white-space:nowrap;}
+.lp-btn:hover{background:rgba(255,255,255,.08);color:#fff;}
+.lp-btn.active{background:rgba(0,200,130,.15);border-color:rgba(0,200,130,.4);color:#00d084;}
+.lp-btn.del{border-color:rgba(255,60,60,.2);color:rgba(255,60,60,.4);}
+.lp-btn.del:hover{background:rgba(255,60,60,.1);color:rgba(255,80,80,.8);}
+.lp-foot{padding:14px 20px;border-top:1px solid rgba(255,255,255,.08);display:flex;gap:10px;flex-shrink:0;}
+.lp-add{flex:1;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;padding:10px;border-radius:5px;cursor:pointer;border:1px solid;}
+
+/* ── PROGRESS ── */
+#prog-bar{position:fixed;bottom:0;left:0;right:0;background:#111;padding:6px 20px;font-family:'DM Mono',monospace;font-size:8px;color:rgba(255,255,255,.4);letter-spacing:1px;z-index:100;display:flex;justify-content:space-between;}
+#prog-fill{color:#6dd96d;}
+
+@media print{
+  .bar,#prog-bar,.ep{display:none!important;}
+  body{background:none;}
+  .pages{max-width:100%;padding:0;}
+  .page-1,.page-n{margin-bottom:0;page-break-after:always;}
+  .page-1{padding-bottom:0;height:100vh;}
+  .zone{cursor:default;outline:none!important;}
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  @page{margin:0;size:letter portrait;}
+}
+
+/* TOUR BOARD ZONE — live from /api/schedule */
+#tourboard-rc .tour-board{background:var(--dark-green);border:3px solid var(--gold);box-shadow:inset 0 0 40px rgba(0,0,0,.4),0 0 0 5px #0e220e,0 0 0 8px var(--gold);margin:0;}
+#tourboard-rc .tb-header{text-align:center;padding:18px 20px 12px;border-bottom:2px solid rgba(200,168,75,.4);}
+#tourboard-rc .tb-star{color:var(--gold);font-size:13px;margin-bottom:4px;display:block;}
+#tourboard-rc .tb-title{font-size:36px;font-weight:900;letter-spacing:5px;color:#f0dfa0;text-shadow:2px 2px 0 rgba(0,0,0,.5);margin-bottom:4px;text-transform:uppercase;font-family:'Bebas Neue',sans-serif;line-height:1;}
+#tourboard-rc .tb-sub{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);border-top:1px solid rgba(200,168,75,.3);border-bottom:1px solid rgba(200,168,75,.3);padding:5px 0;margin:0 30px;}
+#tourboard-rc .tour-list{padding:4px 0;}
+#tourboard-rc .tour-empty{text-align:center;padding:24px;font-family:'DM Mono',monospace;font-size:10px;color:rgba(240,223,160,.45);letter-spacing:2px;}
+#tourboard-rc .tour-row{display:flex;align-items:center;border-bottom:1px solid rgba(200,168,75,.12);padding:9px 18px;}
+#tourboard-rc .tour-row:last-child{border-bottom:none;}
+#tourboard-rc .t-kw{font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:1px;width:130px;flex-shrink:0;}
+#tourboard-rc .t-div{width:1px;height:24px;background:rgba(200,168,75,.2);flex-shrink:0;margin:0 12px;}
+#tourboard-rc .t-date{width:90px;flex-shrink:0;text-align:center;}
+#tourboard-rc .t-dow{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(240,223,160,.4);margin-bottom:1px;}
+#tourboard-rc .t-datenum{font-size:12px;font-weight:700;color:#f0dfa0;}
+#tourboard-rc .t-loc{flex:1;padding:0 12px;}
+#tourboard-rc .t-hood{font-size:12px;font-weight:700;color:#f0dfa0;letter-spacing:1.5px;text-transform:uppercase;}
+#tourboard-rc .t-zip{font-family:'DM Mono',monospace;font-size:9px;color:rgba(240,223,160,.38);margin-top:1px;}
+#tourboard-rc .tb-footer{text-align:center;padding:11px 20px 14px;border-top:2px solid rgba(200,168,75,.25);}
+#tourboard-rc .tb-footer-box{display:inline-block;border:1px solid rgba(200,168,75,.35);padding:6px 18px;}
+#tourboard-rc .tb-footer-main{font-size:12px;font-weight:700;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:2px;}
+#tourboard-rc .tb-footer-sub{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(200,168,75,.45);}
+#tourboard{cursor:default !important;}
+#tourboard-rc .t-rsvp{flex-shrink:0;margin-left:8px;}
+#tourboard-rc .t-rsvp-btn{background:transparent;border:1px solid rgba(200,168,75,.45);color:var(--gold);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:6px 12px;cursor:pointer;transition:all .15s;}
+#tourboard-rc .t-rsvp-btn:hover{background:var(--gold);color:var(--dark-green);}
+#tourboard-rc .tour-row{cursor:pointer;transition:background .15s;}
+#tourboard-rc .tour-row:hover{background:rgba(200,168,75,.07);}
+
+#tourboard .hint{display:none;}
+</style>
+</head>
+<body>
+
+<script>
+// ── ADMIN GATE — runs immediately, before any other script ─────────────────
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('admin') === '1') {
+    var existing = localStorage.getItem('snow_admin_token');
+    if (!existing) {
+      var pw = prompt('Admin password:');
+      if (pw) {
+        localStorage.setItem('snow_admin_token', pw);
+      }
+    }
+    // Strip ?admin=1 from URL so it doesn't stay in the address bar
+    params.delete('admin');
+    var clean = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+    window.history.replaceState({}, '', clean);
+  }
+  if (localStorage.getItem('snow_admin_token')) {
+    document.documentElement.classList.add('is-admin');
+  }
+  // Logout helper for admins (call window.snowLogout() from console or a button)
+  window.snowLogout = function(){
+    localStorage.removeItem('snow_admin_token');
+    document.documentElement.classList.remove('is-admin');
+    window.location.reload();
+  };
+})();
+</script>
+<style>
+/* Public view: hide all editor controls. Admins (html.is-admin) see them. */
+.bar-right { display: none; }
+html.is-admin .bar-right { display: flex; }
+#prog-bar { display: none; }
+html.is-admin #prog-bar { display: block; }
+/* Public view: kill the click-to-edit pointer cue on zones */
+html:not(.is-admin) .zone { cursor: default !important; }
+</style>
+
+<div class="bar">
+  <div style="display:flex;align-items:center;gap:10px">
+    <a href="/volumes" style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;color:rgba(245,240,224,.35);text-decoration:none;border:1px solid rgba(245,240,224,.12);border-radius:4px;padding:4px 9px;white-space:nowrap" onmouseover="this.style.color='rgba(245,240,224,.7)'" onmouseout="this.style.color='rgba(245,240,224,.35)'">← VOLUMES</a>
+    <span class="bar-title" id="prog-vol-label">SNOWMENTUM · VOL. 1</span>
+  </div>
+  <div class="bar-right">
+    <span class="sf" id="sf">✓ saved</span>
+    <button class="btn" onclick="toggleLayoutPanel()" style="border-color:rgba(0,140,250,.3);color:rgba(100,180,255,.8)">📐 Pages</button>
+    <button class="btn" onclick="toggleSettings()" style="border-color:rgba(200,168,75,.3);color:rgba(200,168,75,.7)">⚙ Settings</button>
+    <button class="btn btn-gold" onclick="saveAll()">💾 Save</button>
+    <button class="btn btn-red" onclick="window.print()">🖨 Print</button>
+    <button class="btn" onclick="downloadPDF()" style="background:rgba(100,200,100,.15);border-color:rgba(100,200,100,.4);color:#8de88d" id="pdf-btn">⬇ High-Res PDF</button>
+  </div>
+</div>
+
+<!-- LAYOUT PANEL -->
+<div class="lp" id="lp" onclick="if(event.target===this)toggleLayoutPanel()">
+  <div class="lp-box">
+    <div class="lp-hd">
+      <span class="lp-ttl">PAGE LAYOUT MANAGER</span>
+      <button class="lp-x" onclick="toggleLayoutPanel()">×</button>
+    </div>
+    <div class="lp-body" id="lp-body"></div>
+    <div class="lp-foot" style="flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:10px 14px;">
+        <span style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,.5);white-space:nowrap;">Set total pages:</span>
+        <input id="lp-page-count" type="number" min="6" max="48" placeholder="e.g. 16" style="font-family:'DM Mono',monospace;font-size:11px;background:#111;border:1px solid rgba(255,255,255,.2);color:#fff;padding:5px 10px;border-radius:4px;width:80px;text-align:center;">
+        <button onclick="setPageCount()" style="font-family:'DM Mono',monospace;font-size:9px;background:rgba(0,88,250,.25);border:1px solid rgba(0,88,250,.5);color:rgba(100,180,255,.9);padding:6px 14px;border-radius:4px;cursor:pointer;white-space:nowrap;">Set Pages</button>
+        <span id="lp-count-display" style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,.3);margin-left:auto;white-space:nowrap;"></span>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="lp-add" style="background:rgba(0,88,250,.15);border-color:rgba(0,88,250,.4);color:rgba(100,180,255,.9);" onclick="addPageSlot()">+ Section Page</button>
+        <button class="lp-add" style="background:rgba(0,140,80,.15);border-color:rgba(0,140,80,.4);color:rgba(0,200,130,.9);" onclick="addFreePageSlot()">+ Free Page</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PANEL -->
+<div class="ep" id="ep">
+  <div class="ep-hd">
+    <span class="ep-ttl" id="ep-ttl">Edit Section</span>
+    <button class="ep-x" onclick="closeEP()">×</button>
+  </div>
+  <div class="ep-sc">
+    <div class="ef">
+      <label class="el">Section Label <span style="color:rgba(255,255,255,.25);font-size:8px;">(auto-filled · editable)</span></label>
+      <input class="ei ei-sm" id="f-kicker" placeholder="e.g. 01 · POST · Verbatim Performance" style="font-family:'DM Mono',monospace;letter-spacing:1px;">
+    </div>
+    <div class="ef"><label class="el">Headline</label><input class="ei" id="f-hed" placeholder="e.g. BEST. ROOMMATE. EVER."></div>
+    <div class="ef"><label class="el">Headline Size</label>
+      <select class="ei ei-sm" id="f-sz"><option value="xl">XL — Lead</option><option value="lg">Large</option><option value="md" selected>Medium</option><option value="sm">Small</option></select>
+    </div>
+    <div class="ef"><label class="el">Byline</label><input class="ei" id="f-byline" placeholder="By John Pick"></div>
+    <div class="ef"><label class="el">Body Text</label><textarea class="et" id="f-body" rows="5" placeholder="Article text...&#10;&#10;New line = new paragraph."></textarea></div>
+    <div class="ef"><label class="el">Columns</label>
+      <select class="ei ei-sm" id="f-cols"><option value="1">1 column</option><option value="2" selected>2 columns</option></select>
+    </div>
+    <div class="ediv"></div>
+    <div class="ef">
+      <label class="el">Images (up to 4)</label>
+      <label class="ep-img-lbl">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Add image
+        <input type="file" accept="image/*" style="display:none" onchange="handleImgAdd(this)">
+      </label>
+      <div class="ep-imgs-grid" id="f-imgs-grid"></div>
+    </div>
+    <div class="ef"><label class="el">Caption</label><input class="ei" id="f-cap" placeholder="Image caption..."></div>
+    <div class="ediv"></div>
+    <div class="ef"><label class="el">QR Code URL</label><input class="ei" id="f-qr-url" placeholder="https://snowball-party.vercel.app/join"></div>
+    <div class="ediv"></div>
+    <div class="ef"><label class="el">Video / Link URL</label><input class="ei" id="f-vid" placeholder="https://youtube.com/..."></div>
+    <div class="ef"><label class="el">Button Label</label><input class="ei" id="f-vid-lbl" placeholder="Watch ↗"></div>
+    <div class="ediv"></div>
+    <button class="ep-apply" onclick="applyEdit()">Apply ✓</button>
+  </div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div class="sp" id="sp">
+  <div class="sp-hd">
+    <span class="sp-ttl">Newspaper Settings</span>
+    <button class="sp-x" onclick="toggleSettings()">×</button>
+  </div>
+  <div class="sp-sc">
+    <div class="sp-section">Slogan</div>
+    <div class="ef">
+      <label class="el">Front page slogan</label>
+      <input class="ei" id="set-slogan" placeholder="Delivered by Actors. Read by Everyone." maxlength="60">
+    </div>
+    <button class="ep-apply" onclick="applySlogan()" style="margin-top:0">Apply Slogan</button>
+
+    <div class="sp-section">Weather</div>
+    <div class="ef">
+      <label class="el">City (for live weather)</label>
+      <input class="ei ei-sm" id="set-city" placeholder="Los Angeles" style="margin-bottom:6px">
+      <label class="el" style="margin-top:6px">Latitude</label>
+      <input class="ei ei-sm" id="set-lat" placeholder="34.05" style="margin-bottom:6px">
+      <label class="el" style="margin-top:6px">Longitude</label>
+      <input class="ei ei-sm" id="set-lng" placeholder="-118.24">
+    </div>
+    <button class="ep-apply" onclick="applyWeather()" style="margin-top:0">Refresh Weather</button>
+    <div class="ef" style="margin-top:10px">
+      <label class="el">Or enter custom weather text</label>
+      <input class="ei" id="set-weather-custom" placeholder="e.g. ❄ 28°F · Brisky!">
+    </div>
+    <button class="ep-apply" onclick="applyCustomWeather()" style="margin-top:0;background:rgba(26,18,200,.4)">Use Custom Text</button>
+
+    <div class="sp-section">Price & Volume</div>
+    <div class="ef">
+      <label class="el">Price</label>
+      <input class="ei ei-sm" id="set-price" placeholder="$1.08">
+    </div>
+    <div class="ef">
+      <label class="el">Edition label</label>
+      <input class="ei ei-sm" id="set-vol" placeholder="Vol. 1, No. 1">
+    </div>
+    <button class="ep-apply" onclick="applyMeta()" style="margin-top:0">Apply</button>
+
+    <div class="sp-section">Volume &amp; Issue</div>
+    <div style="font-family:'DM Mono',monospace;font-size:8px;color:rgba(255,255,255,.4);margin-bottom:8px;line-height:1.6">Switch volumes to work on different issues. Each saves separately to the cloud.</div>
+    <div style="display:flex;gap:8px;margin-bottom:6px">
+      <div class="ef" style="flex:1;margin:0">
+        <label class="el">Volume</label>
+        <input class="ei ei-sm" id="set-nw-vol" placeholder="1" value="1">
+      </div>
+      <div class="ef" style="flex:1;margin:0">
+        <label class="el">Issue</label>
+        <input class="ei ei-sm" id="set-nw-issue" placeholder="1" value="1">
+      </div>
+    </div>
+    <button class="ep-apply" onclick="switchVolume()" style="margin-top:0;background:rgba(0,88,250,.3);border-color:rgba(0,88,250,.5)">📂 Load Volume</button>
+    <button class="ep-apply" onclick="saveAll()" style="margin-top:6px">💾 Save Current</button>
+
+    <div class="sp-section">High-Res PDF</div>
+    <div style="font-family:'DM Mono',monospace;font-size:8px;color:rgba(255,255,255,.35);line-height:1.7;margin-bottom:10px;">Renders all 16 pages at 3× scale. Takes ~60 seconds. Best with Chrome.</div>
+    <button class="ep-apply" onclick="downloadPDF()" style="background:rgba(100,200,100,.25);border:1px solid rgba(100,200,100,.4);">⬇ Download High-Res PDF</button>
+
+
+
+    <div class="sp-section">Duplicate Volume</div>
+    <div style="font-family:'DM Mono',monospace;font-size:8px;color:rgba(255,255,255,.4);margin-bottom:8px;line-height:1.6">Copy all content from current volume/issue into a new one. Layouts stay the same — just change the headlines.</div>
+    <div style="display:flex;gap:8px;margin-bottom:6px">
+      <div class="ef" style="flex:1;margin:0">
+        <label class="el">To Volume</label>
+        <input class="ei ei-sm" id="dup-vol" placeholder="2" value="2">
+      </div>
+      <div class="ef" style="flex:1;margin:0">
+        <label class="el">To Issue</label>
+        <input class="ei ei-sm" id="dup-issue" placeholder="1" value="1">
+      </div>
+    </div>
+    <button class="ep-apply" onclick="duplicateVolume()" style="margin-top:0;background:rgba(200,168,75,.2);border-color:rgba(200,168,75,.4);color:#e8c84a;">📋 Duplicate to New Volume</button>
+  </div>
+</div>
+
+<div class="pages" id="pages"></div>
+
+<div id="prog-bar">
+  <span id="prog-vol-label">SNOWMENTUM · VOL. 1</span>
+  <span id="prog-fill">0 / 26 sections filled</span>
+  <span>Click any zone to edit</span>
+</div>
+
+<script>
+// ── SECTION DEFINITIONS ─────────────────────────────────────────────────────
+const SECS = [
+  {id:'s1',  n:'01', label:'POST',        desc:'Verbatim Performance'},
+  {id:'s2',  n:'02', label:'STOP',        desc:'Comedic Fun Stations'},
+  {id:'s3',  n:'03', label:'SPOT',        desc:'Sponsored Content'},
+  {id:'s4',  n:'04', label:'OPTS',        desc:'Snowball Requirements'},
+  {id:'s5',  n:'05', label:'TOPSS',       desc:'Wardrobe & Accessories'},
+  {id:'s6',  n:'06', label:'POTTS',       desc:"What's Growing"},
+  {id:'s7',  n:'07', label:'SNOWPHOTO',   desc:'24 Shots'},
+  {id:'s8',  n:'08', label:'EVENTS',      desc:'Flurries to Big Snows'},
+  {id:'s9',  n:'09', label:'SPORTS',      desc:'New Ways to Play'},
+  {id:'s10', n:'10', label:'THEATER',     desc:'Monologues & Dialogues'},
+  {id:'s11', n:'11', label:'FILM', desc:'Get Some Freshies'},
+  {id:'s12', n:'12', label:'FOOD',        desc:'Reviews & Recipes'},
+  {id:'s13', n:'13', label:'MUSIC',       desc:'Tunes & Hits'},
+  {id:'s14', n:'14', label:'AUDIO',       desc:'Podcasts & Sounds'},
+  {id:'s15', n:'15', label:'NATURE',      desc:'Listen & Look'},
+  {id:'s16', n:'16', label:'OBITUARY',    desc:"Someone We've Lost"},
+  {id:'s17', n:'17', label:'LOVE',        desc:'Your Romantic Tale'},
+  {id:'s18', n:'18', label:'POLITICAL',   desc:'Vibes & Votes'},
+  {id:'s19', n:'19', label:'TECH',        desc:'New Tools, New Rules'},
+  {id:'s20', n:'20', label:'ART',         desc:'The Visuals'},
+  {id:'s21', n:'21', label:'HEALTH',      desc:'Body & Mind'},
+  {id:'s22', n:'22', label:'REAL ESTATE', desc:'Spaces to Be'},
+  {id:'s23', n:'23', label:'TRAVEL',      desc:'Where'},
+  {id:'s24', n:'24', label:'MIDNIGHT',    desc:'When the Clock Strikes'},
+  {id:'s25', n:'25', label:'EXTRA',       desc:'Extra Section'},
+  {id:'s26', n:'26', label:'EXTRA',       desc:'Extra Section'},
+  {id:'s27', n:'27', label:'EXTRA',       desc:'Extra Section'},
+  {id:'s28', n:'28', label:'EXTRA',       desc:'Extra Section'},
+  {id:'s29', n:'29', label:'EXTRA',       desc:'Extra Section'},
+  {id:'s30', n:'30', label:'EXTRA',       desc:'Extra Section'},
+  // Front page unlabeled hero zones
+  {id:'fp1', n:'F1', label:'',            desc:'Front Page Hero'},
+  {id:'fp2', n:'F2', label:'',            desc:'Front Page Story'},
+  // Center fold wildcards (pages 8-9)
+  {id:'wc1', n:'W1', label:'',            desc:'Center Spread'},
+  {id:'wc2', n:'W2', label:'',            desc:'Center Spread'},
+  {id:'wc3', n:'W3', label:'',            desc:'Center Spread'},
+  {id:'wc4', n:'W4', label:'',            desc:'Center Spread'},
+  // New pages 16-18
+  {id:'s31', n:'31', label:'SPONSORED',   desc:'Sponsored Content'},
+  {id:'s32', n:'32', label:'SPONSORED',   desc:'Sponsored Content'},
+  {id:'s33', n:'33', label:'SPONSORED',   desc:'Sponsored Content'},
+  {id:'s34', n:'34', label:'GAMES',       desc:'Games & Puzzles'},
+  {id:'s35', n:'35', label:'GAMES',       desc:'Games & Puzzles'},
+  {id:'s36', n:'36', label:'GAMES',       desc:'Games & Puzzles'},
+  {id:'s37', n:'37', label:'EXTRA',       desc:'Back Page'},
+  {id:'s38', n:'38', label:'EXTRA',       desc:'Back Page'},
+  {id:'tourboard', n:'TB', label:'TOUR BOARD', desc:'Live Schedule'},
+  {id:'live1', n:'P3', label:"PARTIES THIS MONTH", desc:"Auto-filled from /api/schedule"},
+];
+
+const LAYOUTS = [
+  // Page 1: Front page — unlabeled hero zones
+  { front:true,    rows:[ [{id:'fp1',w:3},{id:'fp2',w:2}] ] },
+  // Pages 2-7: Sections 1-12 (2 per page)
+  { rows:[ [{id:'s1',w:3},{id:'s2',w:2}] ] },
+  { rows:[ [{id:'live1',w:5}] ] },
+  { rows:[ [{id:'s5',w:3},{id:'s6',w:2}] ] },
+  { rows:[ [{id:'s7',w:2},{id:'s8',w:3}] ] },
+  { rows:[ [{id:'s9',w:3},{id:'s10',w:2}] ] },
+  { rows:[ [{id:'s11',w:2},{id:'s12',w:3}] ] },
+  // Pages 8-9: CENTER FOLD — full-bleed single zone each
+  { wild:true, full:true, rows:[ [{id:'wc1',w:1}] ] },
+  { wild:true, full:true, rows:[ [{id:'wc2',w:1}] ] },
+  // Pages 10-15: Sections 13-24 (2 per page)
+  { rows:[ [{id:'s13',w:3},{id:'s14',w:2}] ] },
+  { rows:[ [{id:'s15',w:2},{id:'s16',w:3}] ] },
+  { rows:[ [{id:'s17',w:3},{id:'s18',w:2}] ] },
+  { rows:[ [{id:'s19',w:2},{id:'s20',w:3}] ] },
+  { rows:[ [{id:'s21',w:3},{id:'s22',w:2}] ] },
+  { rows:[ [{id:'s23',w:2},{id:'s24',w:3}] ] },
+  // Page 16: Back Page — full-bleed single zone
+  { full:true, rows:[ [{id:'s37',w:1}] ] },
+];
+
+const PAGE_LABELS = [
+  'Front Page',
+  'Page 2','Page 3','Page 4','Page 5','Page 6','Page 7',
+  'Center Spread · Page 8','Center Spread · Page 9',
+  'Page 10','Page 11','Page 12','Page 13','Page 14','Page 15',
+  'Page 16 · Sponsored','Page 17 · Games','Page 18 · Back Page'
+];
+
+const SECMAP = {};
+SECS.forEach(s => SECMAP[s.id]=s);
+
+// ── DATE ────────────────────────────────────────────────────────────────────
+const now = new Date();
+const dateStr = now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+const dateShort = now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+
+// ── SETTINGS STORAGE ────────────────────────────────────────────────────────
+const SETTINGS_KEY = 'snow_settings';
+let CFG = {
+  slogan: 'Delivered by Actors. Read by Everyone.',
+  weather: '☀ Los Angeles',
+  price: '$1.08',
+  vol: 'Vol. 1, No. 1',
+  lat: 34.05,
+  lng: -118.24,
+  city: 'Los Angeles',
+};
+try { Object.assign(CFG, JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')); } catch(e){}
+
+function saveSettings(){
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(CFG));
+  saveToSupabase();
+}
+
+function updateDatelineDom(){
+  document.querySelectorAll('.dl-price').forEach(el => el.textContent = CFG.price + ' · ' + CFG.vol);
+  document.querySelectorAll('.dl-slogan').forEach(el => el.textContent = CFG.slogan);
+  document.querySelectorAll('.dl-weather').forEach(el => el.textContent = CFG.weather);
+  document.querySelectorAll('.inner-slogan').forEach(el => el.textContent = '"' + CFG.slogan + '"');
+  document.querySelectorAll('.inner-vol').forEach(el => el.textContent = CFG.vol + '\n' + dateShort + '\n' + CFG.price);
+}
+
+// ── WEATHER ─────────────────────────────────────────────────────────────────
+async function fetchWeather(){
+  try{
+    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${CFG.lat}&longitude=${CFG.lng}&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=auto`);
+    const d = await r.json();
+    const temp = Math.round(d.current.temperature_2m);
+    const code = d.current.weather_code;
+    const icon = code<=1?'☀':code<=3?'⛅':code<=67?'🌧':code<=77?'❄':'🌫';
+    CFG.weather = `${icon} ${temp}°F · ${CFG.city}`;
+    saveSettings();
+    updateDatelineDom();
+  }catch(e){ console.log('weather fetch failed', e); }
+}
+
+// Settings panel functions
+function toggleSettings(){
+  const sp = document.getElementById('sp');
+  const isOpen = sp.classList.toggle('open');
+  if(isOpen){
+    document.getElementById('set-slogan').value = CFG.slogan;
+    document.getElementById('set-city').value = CFG.city;
+    document.getElementById('set-lat').value = CFG.lat;
+    document.getElementById('set-lng').value = CFG.lng;
+    document.getElementById('set-price').value = CFG.price;
+    document.getElementById('set-vol').value = CFG.vol;
+    document.getElementById('set-weather-custom').value = '';
+  }
+}
+
+function applySlogan(){
+  const v = document.getElementById('set-slogan').value.trim();
+  if(v){ CFG.slogan = v; saveSettings(); updateDatelineDom(); }
+}
+
+function applyWeather(){
+  CFG.city = document.getElementById('set-city').value.trim() || 'Los Angeles';
+  CFG.lat  = parseFloat(document.getElementById('set-lat').value) || 34.05;
+  CFG.lng  = parseFloat(document.getElementById('set-lng').value) || -118.24;
+  saveSettings();
+  fetchWeather();
+}
+
+function applyCustomWeather(){
+  const v = document.getElementById('set-weather-custom').value.trim();
+  if(v){ CFG.weather = v; saveSettings(); updateDatelineDom(); }
+}
+
+function applyMeta(){
+  const p = document.getElementById('set-price').value.trim();
+  const v = document.getElementById('set-vol').value.trim();
+  if(p) CFG.price = p;
+  if(v) CFG.vol = v;
+  saveSettings(); updateDatelineDom();
+}
+
+// ── BUILD PAGES ─────────────────────────────────────────────────────────────
+function makeZoneRow(row){
+  const rowDiv = document.createElement('div');
+  rowDiv.className = 'zone-row';
+  row.forEach(cell => {
+    const sec = SECMAP[cell.id];
+    const hint = sec ? `+ ${sec.n} · ${sec.label}` : `+ ${cell.id}`;
+    const label = sec ? `${sec.n} · ${sec.label} — ${sec.desc}` : cell.id;
+    const wc = cell.w===2?'w2':cell.w===3?'w3':'';
+    const zone = document.createElement('div');
+    zone.className = 'zone' + (wc?' '+wc:'');
+    zone.id = cell.id;
+    zone.innerHTML = `<div class="hint">${hint}</div><div id="${cell.id}-rc"></div>`;
+    zone.onclick = () => openEP(cell.id, label);
+    rowDiv.appendChild(zone);
+  });
+  return rowDiv;
+}
+
+function buildPages(){
+  const container = document.getElementById('pages');
+  LAYOUTS.forEach((layout, pi) => {
+    const isFirst = pi === 0;
+    const isFront = layout.front === true;
+    const isWild  = layout.wild  === true;
+    const rows    = layout.rows || layout;
+    const pgLabel = PAGE_LABELS[pi];
+    const pgNum   = pi + 1;
+    const totalPages = LAYOUTS.length;
+
+    if(isFirst){
+      const page = document.createElement('div');
+      page.className = 'page-1';
+      const inner = document.createElement('div');
+      inner.className = 'page-1-inner';
+
+      const gap = document.createElement('div');
+      gap.className = 'p1-mh-gap';
+      inner.appendChild(gap);
+
+      const dlw = document.createElement('div');
+      dlw.className = 'dateline-wrap';
+      dlw.innerHTML = `<div class="dateline">
+        <div class="dl-side dl-price">${CFG.price} · ${CFG.vol}</div>
+        <div class="dl-center dl-slogan">${CFG.slogan}</div>
+        <div class="dl-side r dl-weather">${CFG.weather}</div>
+      </div>`;
+      inner.appendChild(dlw);
+
+      // Front page: NO sec-bar — clean unlabeled zones
+      const art = document.createElement('div');
+      art.className = 'art-area';
+      rows.forEach(row => art.appendChild(makeZoneRow(row)));
+      inner.appendChild(art);
+
+      page.appendChild(inner);
+      container.appendChild(page);
+
+    } else {
+      const isFree = layout.free === true;
+      const page = document.createElement('div');
+      page.className = isFree ? 'page-free' : 'page-n';
+      const inner = document.createElement('div');
+      inner.className = 'page-n-inner';
+      page.appendChild(inner);
+
+      if(isFree) {
+        // Free page: full-bleed zone, minimal footer, no header/sec-bar/airmail
+        const art = document.createElement('div');
+        art.style.cssText = 'position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;';
+        rows.forEach(row => art.appendChild(makeZoneRow(row)));
+        inner.appendChild(art);
+        const ft = document.createElement('div');
+        ft.className = 'pg-ft';
+        ft.style.cssText = 'position:absolute;bottom:1.5%;left:0;right:0;z-index:2;';
+        ft.innerHTML = `<span>Snowmentum · Vol. 1</span><span>snowmentum.org</span><span>Page ${pgNum} of ${totalPages}</span>`;
+        inner.appendChild(ft);
+      } else {
+        const topGap = document.createElement('div');
+        topGap.style.cssText = 'flex-shrink:0;height:4%';
+        inner.appendChild(topGap);
+
+        const hd = document.createElement('div');
+        hd.className = 'pg-hd';
+        hd.innerHTML = `
+          <div class="pg-hd-wordmark">Snowmentum</div>
+          <div class="pg-hd-meta">
+            ${pgLabel}<br>
+            <span class="inner-slogan" style="font-style:italic;font-family:'Playfair Display',serif;font-size:8px;">"${CFG.slogan}"</span>
+          </div>
+          <div class="pg-hd-right inner-vol" style="white-space:pre-line">${CFG.vol}
+${dateShort}
+${CFG.price}</div>`;
+        inner.appendChild(hd);
+
+        const sb = document.createElement('div');
+        sb.className = 'sec-bar';
+        if(isWild){
+          sb.innerHTML = `<span>◆ CENTER SPREAD</span><span>Los Angeles, CA</span>`;
+        } else {
+          const secNames = rows.flat().map(c=>SECMAP[c.id]?.label||'').filter(Boolean).join(' · ');
+          sb.innerHTML = `<span>${secNames}</span><span>Los Angeles, CA</span>`;
+        }
+        inner.appendChild(sb);
+
+        const art = document.createElement('div');
+        art.className = 'art-area';
+        if(layout.full) {
+          art.style.cssText = 'flex:1;display:flex;flex-direction:column;padding:0;overflow:hidden;min-height:0;';
+        }
+        rows.forEach(row => art.appendChild(makeZoneRow(row)));
+        inner.appendChild(art);
+
+        const ft = document.createElement('div');
+        ft.className = 'pg-ft';
+        ft.innerHTML = `<span>Snowmentum · Vol. 1</span><span>snowmentum.org</span><span>Page ${pgNum} of ${totalPages}</span>`;
+        inner.appendChild(ft);
+
+        const botGap = document.createElement('div');
+        botGap.style.cssText = 'flex-shrink:0;height:3%';
+        inner.appendChild(botGap);
+      }
+
+      container.appendChild(page);
+    }
+  });
+}
+
+// ── STORAGE + RENDER ────────────────────────────────────────────────────────
+const KEY = 'snow_vol1';
+let D = {}; let cur = null; let curImg = null;
+// Read vol/issue from URL params first (e.g. /newspaper?vol=2&issue=1)
+// If neither URL params nor localStorage have a value, NW_VOLUME/NW_ISSUE stay
+// empty and the API returns the latest issue automatically.
+const _urlParams = new URLSearchParams(window.location.search);
+const _urlVol    = _urlParams.get('vol');
+const _urlIssue  = _urlParams.get('issue');
+const NW_TOKEN   = localStorage.getItem('snow_admin_token') || '';
+const _isAdmin   = !!NW_TOKEN;
+// Admins fall back to localStorage so they keep editing the issue they were on.
+// Public visitors always get the latest unless URL specifies otherwise.
+let NW_VOLUME = _urlVol   || (_isAdmin ? (localStorage.getItem('nw_volume') || '') : '');
+let NW_ISSUE  = _urlIssue || (_isAdmin ? (localStorage.getItem('nw_issue')  || '') : '');
+if(_urlVol)   localStorage.setItem('nw_volume', NW_VOLUME);
+if(_urlIssue) localStorage.setItem('nw_issue',  NW_ISSUE);
+
+// Load from Supabase on startup; fall back to localStorage cache
+async function loadFromSupabase() {
+  try {
+    const url = (NW_VOLUME && NW_ISSUE)
+      ? `/api/get-newspaper?volume=${encodeURIComponent(NW_VOLUME)}&issue=${encodeURIComponent(NW_ISSUE)}`
+      : `/api/get-newspaper`;
+    const res = await fetch(url, {
+      headers: NW_TOKEN ? { 'x-admin-token': NW_TOKEN } : {}
+    });
+    const data = await res.json();
+    if (data.issue && data.issue.content && Object.keys(data.issue.content).length) {
+      D = data.issue.content;
+      if (data.issue.settings) Object.assign(CFG, data.issue.settings);
+      // If we auto-loaded the latest, sync our state with what came back
+      if (!NW_VOLUME && data.issue.volume != null) NW_VOLUME = String(data.issue.volume);
+      if (!NW_ISSUE  && data.issue.issue  != null) NW_ISSUE  = String(data.issue.issue);
+      // Update the volume label in the toolbar
+      const volLabelEl = document.getElementById('prog-vol-label');
+      if (volLabelEl) volLabelEl.textContent = 'SNOWMENTUM · VOL. ' + NW_VOLUME + ' · ISSUE ' + NW_ISSUE;
+      // Re-render all sections
+      Object.keys(D).forEach(id => render(id));
+      updateDatelineDom();
+      showSaveStatus('☁ loaded from cloud');
+      // Update local cache
+      try { localStorage.setItem(KEY, JSON.stringify(D)); } catch(e) {}
+      return true;
+    }
+  } catch(e) {
+    console.warn('Supabase load failed, using local cache:', e);
+  }
+  // Fallback: localStorage cache
+  try { D = JSON.parse(localStorage.getItem(KEY)||'{}'); } catch(e) {}
+  return false;
+}
+
+// Debounced Supabase save
+let _saveTimer = null;
+async function saveToSupabase() {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(async () => {
+    try {
+      const res = await fetch('/api/save-newspaper', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': NW_TOKEN },
+        body: JSON.stringify({ volume: NW_VOLUME, issue: NW_ISSUE, content: D, settings: CFG })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showSaveStatus('☁ saved to cloud');
+        try { localStorage.setItem(KEY, JSON.stringify(D)); } catch(e) {}
+      } else {
+        showSaveStatus('⚠ save failed', true);
+      }
+    } catch(e) {
+      showSaveStatus('⚠ offline — saved locally', true);
+      try { localStorage.setItem(KEY, JSON.stringify(D)); } catch(e2) {}
+    }
+  }, 800);
+}
+
+function showSaveStatus(msg, warn = false) {
+  const el = document.getElementById('sf');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = warn ? '#ffaa44' : '';
+  el.style.opacity = '1';
+  setTimeout(() => el.style.opacity = '0', 2500);
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+document.addEventListener('click', function(e){
+  var btn = e.target.closest('[data-join]');
+  if(btn){ e.preventDefault(); e.stopPropagation(); window.open(btn.getAttribute('data-join'), '_blank'); }
+}, true);
+
+async function renderTourboard(){
+  var el = document.getElementById('tourboard-rc');
+  if(!el) return;
+  var zone = document.getElementById('tourboard');
+  if(zone) zone.classList.add('has-content');
+  var now = new Date();
+  var sub = now.toLocaleDateString('en-US',{month:'long',year:'numeric'}).toUpperCase() + ' TOUR \u00b7 LOS ANGELES';
+  try {
+    var res = await fetch('/api/schedule');
+    var data = await res.json();
+    var parties = data.parties || [];
+    var rowsHtml;
+    if(!parties.length){
+      rowsHtml = '<div class="tour-empty">No parties scheduled yet \u2014 check back soon.</div>';
+    } else {
+      rowsHtml = parties.map(function(p){
+        var dt = p.start_time ? new Date(p.start_time) : null;
+        var dow = dt ? dt.toLocaleDateString('en-US',{weekday:'short'}).toUpperCase() : '';
+        var dateStr = dt ? dt.toLocaleDateString('en-US',{month:'short',day:'numeric'}).toUpperCase() : '\u2014';
+        var kw = (p.keyword || p.name || '').toUpperCase().replace(/\s+/g,'').substring(0,12);
+        var hood = p.neighborhood || p.city || '\u2014';
+        var zip = p.zip_code || '';
+        var joinUrl = '/join/' + encodeURIComponent(kw);
+        return '<div class="tour-row" data-join="' + joinUrl + '">' +
+          '<div class="t-kw">#' + kw + '</div>' +
+          '<div class="t-div"></div>' +
+          '<div class="t-date"><div class="t-dow">' + dow + '</div><div class="t-datenum">' + dateStr + '</div></div>' +
+          '<div class="t-div"></div>' +
+          '<div class="t-loc"><div class="t-hood">' + hood + '</div>' + (zip ? '<div class="t-zip">' + zip + '</div>' : '') + '</div>' +
+          '<div class="t-rsvp"><button class="t-rsvp-btn" data-join="' + joinUrl + '">RSVP</button></div>' +
+        '</div>';
+      }).join('');
+    }
+    el.innerHTML = '<div class="tour-board">' +
+      '<div class="tb-header">' +
+        '<span class="tb-star">\u2605</span>' +
+        '<div class="tb-title">SNOWMENTUM</div>' +
+        '<div class="tb-sub">' + sub + '</div>' +
+      '</div>' +
+      '<div class="tour-list">' + rowsHtml + '</div>' +
+      '<div class="tb-footer">' +
+        '<div class="tb-footer-box">' +
+          '<div class="tb-footer-main">\u2605 8 P.M. DELIVERY \u2605</div>' +
+          '<div class="tb-footer-sub">Starting location texted day of event</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  } catch(e){
+    el.innerHTML = '<div class="tour-board"><div class="tb-header"><div class="tb-title">SNOWMENTUM</div></div><div class="tour-list"><div class="tour-empty">Could not load schedule.</div></div></div>';
+  }
+}
+
+function render(id){
+  if(id === 'tourboard'){ renderTourboard(); return; }
+  const el = document.getElementById(id+'-rc');
+  const zone = document.getElementById(id);
+  if(!el||!zone) return;
+  const d = D[id]||{};
+  const imgs = d.imgs || (d.img ? [d.img] : []);
+  if(!d.hed&&!d.body&&!imgs.length){ el.innerHTML=''; zone.classList.remove('has-content'); return; }
+  zone.classList.add('has-content');
+  let h = '<div class="rc">';
+  if(d.kicker) h+=`<div class="rc-kicker">${esc(d.kicker)}</div>`;
+  if(d.hed)    h+=`<div class="rc-hed ${d.sz||'md'}">${esc(d.hed)}</div>`;
+  if(d.byline) h+=`<div class="rc-byline">${esc(d.byline)}</div>`;
+  // Multi-image: first big, rest small below
+  if(imgs.length === 1){
+    h+=`<img class="rc-imgs-main" src="${imgs[0]}" alt="">`;
+  } else if(imgs.length > 1){
+    h+=`<img class="rc-imgs-main" src="${imgs[0]}" alt="">`;
+    h+=`<div class="rc-imgs-thumbs">`;
+    imgs.slice(1).forEach(src => { h+=`<img src="${src}" alt="">`; });
+    h+=`</div>`;
+  }
+  if(d.cap)    h+=`<div class="rc-cap">${esc(d.cap)}</div>`;
+  if(d.body){
+    const paras=d.body.split('\n').filter(p=>p.trim()).map(p=>`<p>${esc(p)}</p>`).join('');
+    h+=`<div class="rc-body${d.cols>1?' c2':''}">${paras}</div>`;
+  }
+  if(d.vid) h+=`<a class="rc-vid" href="${d.vid}" target="_blank">${esc(d.vidLbl||'Watch ↗')}</a>`;
+  // QR code
+  if(d.qrUrl){
+    const qrSrc=`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(d.qrUrl)}`;
+    h+=`<div class="rc-qr"><img src="${qrSrc}" alt="QR"><div class="rc-qr-url">${esc(d.qrUrl)}</div></div>`;
+  }
+  h+='</div>';
+  el.innerHTML=h;
+  updateProg();
+}
+
+function renderAll(){ SECS.forEach(s=>render(s.id)); }
+function updateProg(){
+  const n = SECS.filter(s=>D[s.id]&&(D[s.id].hed||D[s.id].body||D[s.id].img)).length;
+  document.getElementById('prog-fill').textContent = n+' / 26 sections filled';
+}
+
+// ── EDIT PANEL ──────────────────────────────────────────────────────────────
+function openEP(id,label){
+  if(!NW_TOKEN) return; // public visitors can't open the edit panel
+  if(cur) document.getElementById(cur)?.classList.remove('ed');
+  cur=id; curImg=null;
+  document.getElementById(id).classList.add('ed');
+  document.getElementById('ep-ttl').textContent=label;
+  const d=D[id]||{};
+
+  // ── Auto-seed blank zones from TOC ──────────────────────────────────────
+  const isBlank = !d.kicker && !d.hed && !d.body && !(d.imgs||d.img);
+  if(isBlank){
+    const sec = SECMAP[id];
+    if(sec && sec.label){
+      d.kicker = sec.n + ' · ' + sec.label + ' · ' + sec.desc;
+    }
+  }
+
+  // ── Auto-fill kicker (editable) ──────────────────────────────────────────
+  const secForKicker = SECMAP[id];
+  if(!d.kicker && secForKicker && secForKicker.label){
+    document.getElementById('f-kicker').value = secForKicker.n + ' · ' + secForKicker.label + ' · ' + secForKicker.desc;
+  } else {
+    document.getElementById('f-kicker').value = d.kicker || '';
+  }
+  document.getElementById('f-hed').value    =d.hed    ||'';
+  document.getElementById('f-sz').value     =d.sz     ||'md';
+  document.getElementById('f-byline').value =d.byline ||'';
+  document.getElementById('f-body').value   =d.body   ||'';
+  document.getElementById('f-cols').value   =String(d.cols||2);
+  document.getElementById('f-cap').value    =d.cap    ||'';
+  document.getElementById('f-vid').value    =d.vid    ||'';
+  document.getElementById('f-vid-lbl').value=d.vidLbl ||'';
+  // Populate multi-image grid
+  const imgs = d.imgs || (d.img ? [d.img] : []);
+  renderImgGrid(imgs);
+  document.getElementById('f-qr-url').value = d.qrUrl || '';
+  document.getElementById('ep').classList.add('open');
+  setTimeout(()=>document.getElementById('f-hed').focus(),50);
+}
+function closeEP(){
+  if(cur) document.getElementById(cur)?.classList.remove('ed');
+  cur=null; document.getElementById('ep').classList.remove('open');
+}
+let curImgs = []; // working copy of imgs array for current section
+
+function renderImgGrid(imgs){
+  curImgs = imgs.slice(0, 4);
+  const grid = document.getElementById('f-imgs-grid');
+  if(!grid) return;
+  grid.innerHTML = '';
+  if(!curImgs.length) return;
+  curImgs.forEach((src, i) => {
+    const slot = document.createElement('div');
+    slot.className = 'ep-img-slot';
+
+    const img = document.createElement('img');
+    img.className = 'ep-img-slot-prev';
+    img.src = src;
+
+    const lbl = document.createElement('span');
+    lbl.style.cssText = "font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,.3)";
+    lbl.textContent = i === 0 ? 'Main' : 'Extra ' + i;
+
+    const btn = document.createElement('button');
+    btn.className = 'ep-img-slot-rm';
+    btn.textContent = '×';
+    btn.type = 'button';
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      removeImg(i);
+    });
+
+    slot.appendChild(img);
+    slot.appendChild(lbl);
+    slot.appendChild(btn);
+    grid.appendChild(slot);
+  });
+}
+
+async function handleImgAdd(input){
+  const file=input.files[0]; if(!file) return;
+  if(curImgs.length >= 4){ alert('Max 4 images per section'); return; }
+  try {
+    const dataUrl = await new Promise((resolve,reject)=>{
+      const r=new FileReader();
+      r.onload=e=>resolve(e.target.result);
+      r.onerror=()=>reject(new Error('read failed'));
+      r.readAsDataURL(file);
+    });
+    const token = localStorage.getItem('snow_admin_token') || '';
+    const res = await fetch('/api/upload-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+      body: JSON.stringify({ dataUrl, filename: file.name })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({error:res.statusText}));
+      throw new Error(err.error || 'upload failed');
+    }
+    const { url } = await res.json();
+    curImgs.push(url);
+    renderImgGrid(curImgs);
+    input.value='';
+  } catch (e) {
+    alert('Image upload failed: ' + e.message);
+    input.value='';
+  }
+}
+
+function removeImg(i){
+  curImgs.splice(i, 1);
+  renderImgGrid(curImgs.slice()); // pass a copy so indices stay correct
+}
+
+// Legacy stubs (kept for safety)
+function handleImg(input){ handleImgAdd(input); }
+function clearImg(){ curImgs=[]; renderImgGrid([]); }
+function applyEdit(){
+  if(!cur)return;
+  const d=D[cur]||{};
+  d.kicker=document.getElementById('f-kicker').value.trim();
+  d.hed   =document.getElementById('f-hed').value.trim();
+  d.sz    =document.getElementById('f-sz').value;
+  d.byline=document.getElementById('f-byline').value.trim();
+  d.body  =document.getElementById('f-body').value.trim();
+  d.cols  =parseInt(document.getElementById('f-cols').value)||1;
+  d.cap   =document.getElementById('f-cap').value.trim();
+  d.vid   =document.getElementById('f-vid').value.trim();
+  d.vidLbl=document.getElementById('f-vid-lbl').value.trim();
+  // Save images array (migrate old d.img to d.imgs)
+  if(curImgs.length > 0){
+    d.imgs = curImgs.slice(0, 4);
+    delete d.img; // migrate legacy
+  } else if(curImgs.length === 0 && (d.imgs || d.img)){
+    delete d.imgs;
+    delete d.img;
+  }
+  d.qrUrl = document.getElementById('f-qr-url').value.trim();
+  if(!d.qrUrl) delete d.qrUrl;
+  D[cur]=d; render(cur); saveAll(); closeEP();
+}
+function saveAll(){
+  saveToSupabase();
+}
+
+async function switchVolume(){
+  const vol   = (document.getElementById('set-nw-vol')?.value  || '1').trim();
+  const issue = (document.getElementById('set-nw-issue')?.value || '1').trim();
+  if(!vol || !issue) return;
+  await saveToSupabase();
+  NW_VOLUME = vol;
+  NW_ISSUE  = issue;
+  localStorage.setItem('nw_volume', vol);
+  localStorage.setItem('nw_issue', issue);
+  D = {};
+  document.querySelectorAll('.zone').forEach(z => {
+    const rc = document.getElementById(z.id + '-rc');
+    if(rc) rc.innerHTML = '';
+    z.classList.remove('has-content');
+  });
+  const volLabel = document.getElementById('prog-vol-label');
+  if(volLabel) volLabel.textContent = 'VOL. ' + vol + ' · ISSUE ' + issue;
+  const loaded = await loadFromSupabase();
+  if(!loaded) showSaveStatus('☁ new issue — start editing!');
+  document.getElementById('set-nw-vol').value   = vol;
+  document.getElementById('set-nw-issue').value = issue;
+}
+
+// ── DUPLICATE VOLUME ─────────────────────────────────────────────────────────
+
+// ── PAGE SLOT SYSTEM ─────────────────────────────────────────────────────────
+// Each slot: { type:'section'|'free', count:1-4, split:'h'|'v', freeId:'fx1' }
+// 'section' slots consume from CONTENT_SECS sequentially
+// 'free' slots are blank wildcard pages not tied to sections
+// split: 'v' = vertical (side by side), 'h' = horizontal (stacked top/bottom)
+
+const CONTENT_SECS = ['s1','s2','s3','s4','s5','s6','s7','s8','s9','s10','s11','s12','s13','s14','s15','s16','s17','s18','s19','s20','s21','s22','s23','s24'];
+
+// Free page IDs pool
+const FREE_IDS = ['fx1','fx2','fx3','fx4','fx5','fx6','fx7','fx8','fx9','fx10'];
+// Register free IDs in SECS so SECMAP finds them
+FREE_IDS.forEach(id => {
+  if(!SECS.find(s=>s.id===id)) SECS.push({id, n:'F', label:'FREE', desc:'Free Page'});
+});
+
+function defaultSlots() {
+  return [
+    {type:'section',count:2,split:'v'},{type:'section',count:2,split:'v'},
+    {type:'section',count:2,split:'v'},{type:'section',count:2,split:'v'},
+    {type:'section',count:2,split:'v'},{type:'section',count:2,split:'v'},
+    {type:'free',freeId:'fx1'},
+    {type:'free',freeId:'fx2'},
+    {type:'section',count:2,split:'v'},{type:'section',count:2,split:'v'},
+    {type:'section',count:2,split:'v'},{type:'section',count:2,split:'v'},
+    {type:'section',count:2,split:'v'},{type:'section',count:2,split:'v'},
+    {type:'free',freeId:'fx3'},
+  ];
+}
+
+let PAGE_SLOTS = JSON.parse(localStorage.getItem('nw_page_slots') || 'null') || defaultSlots();
+// Rebuild SECMAP after adding free IDs
+const SECMAP2 = {}; SECS.forEach(s => SECMAP2[s.id] = s);
+Object.assign(SECMAP, SECMAP2);
+
+function makeRows(secs, count, split, pageIdx) {
+  // Vertical split (side by side) - default
+  const wPat = [[3,2],[2,3],[3,2],[2,3],[3,2],[2,3],[3,2],[2,3],[3,2],[2,3],[3,2],[2,3]];
+  const p = wPat[pageIdx % wPat.length];
+
+  if(split === 'h') {
+    // Horizontal split: each section gets its own row (stacked)
+    return secs.map(id => [{id, w:1}]);
+  }
+
+  // Vertical patterns
+  if(count === 1) return [ [{id:secs[0],w:1}] ];
+  if(count === 2) return [ [{id:secs[0],w:p[0]},{id:secs[1],w:p[1]}] ];
+  if(count === 3) {
+    // Top row: first 2 vertical, bottom row: 1 full
+    return [ [{id:secs[0],w:p[0]},{id:secs[1],w:p[1]}],[{id:secs[2],w:1}] ];
+  }
+  if(count === 4) {
+    return [ [{id:secs[0],w:2},{id:secs[1],w:3}],[{id:secs[2],w:3},{id:secs[3],w:2}] ];
+  }
+  return [ [{id:secs[0],w:1}] ];
+}
+
+let _freeIdCounter = 0;
+function nextFreeId() {
+  // Find a free ID not currently in use
+  const used = PAGE_SLOTS.filter(s=>s.type==='free').map(s=>s.freeId);
+  for(const id of FREE_IDS) { if(!used.includes(id)) return id; }
+  return 'fx1';
+}
+
+function buildLayoutsFromSlots(slots) {
+  let secIdx = 0;
+  let freeIdx = 0;
+  const pages = [];
+
+  slots.forEach((slot, i) => {
+    if(slot.type === 'free') {
+      const fid = slot.freeId || FREE_IDS[freeIdx++ % FREE_IDS.length];
+      slot.freeId = fid;
+      pages.push({ free:true, full:true, rows:[ [{id:fid,w:1}] ] });
+    } else {
+      const count = slot.count || 2;
+      const split = slot.split || 'v';
+      const chunk = CONTENT_SECS.slice(secIdx, secIdx + count);
+      secIdx += count;
+      while(chunk.length < count) chunk.push('s37');
+      pages.push({ rows: makeRows(chunk, count, split, i) });
+    }
+  });
+
+  // Split around center fold
+  const half = Math.ceil(pages.length / 2);
+  const before = pages.slice(0, half);
+  const after  = pages.slice(half);
+
+  return [
+    { front:true, rows:[ [{id:'tourboard',w:5}], [{id:'fp1',w:3},{id:'fp2',w:2}] ] },
+    ...pages,
+  ];
+}
+
+function applySlots(slots) {
+  PAGE_SLOTS = slots;
+  localStorage.setItem('nw_page_slots', JSON.stringify(slots));
+  const newLayouts = buildLayoutsFromSlots(slots);
+  LAYOUTS.length = 0;
+  newLayouts.forEach(l => LAYOUTS.push(l));
+  document.getElementById('pages').innerHTML = '';
+  buildPages();
+  renderAll();
+  updateProgBar();
+  renderPageManager();
+}
+
+function updateProgBar() {
+  const filled = countFilled();
+  const total = LAYOUTS.reduce((acc,l) => acc + l.rows.flat().length, 0);
+  document.getElementById('prog-fill').textContent = filled + ' / ' + total + ' sections filled';
+}
+
+function countFilled() {
+  return Object.keys(D).filter(k => D[k] && (D[k].hed || D[k].body || (D[k].imgs && D[k].imgs.length))).length;
+}
+
+function getSectionLabel(secId) {
+  const s = SECMAP[secId];
+  return s && s.label ? s.n + ' · ' + s.label : secId;
+}
+
+function toggleLayoutPanel() {
+  document.getElementById('lp').classList.toggle('open');
+  renderPageManager();
+}
+
+function makeFixedRow(pgNum, label, color) {
+  const row = document.createElement('div');
+  row.style.cssText = 'display:grid;grid-template-columns:36px 1fr;align-items:center;gap:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:6px;padding:8px 12px;opacity:0.5;';
+  const num = document.createElement('span');
+  num.className = 'lp-pgnum';
+  num.textContent = pgNum;
+  const lbl = document.createElement('span');
+  lbl.style.cssText = "font-family:'DM Mono',monospace;font-size:9px;color:" + color + ";letter-spacing:1px;";
+  lbl.textContent = '🔒 ' + label;
+  row.appendChild(num); row.appendChild(lbl);
+  return row;
+}
+
+function setPageCount() {
+  const input = document.getElementById('lp-page-count');
+  const target = parseInt(input.value);
+  if(!target || target < 6) { alert('Minimum 6 pages (Front + 2 content + Center Fold x2 + Back)'); return; }
+  // Fixed pages: Front(1) + CenterFold(2) + Back(1) = 4
+  const contentPages = target - 4;
+  if(contentPages < 1) { alert('Need at least 1 content page'); return; }
+  // Fixed structure: content pages split around 2 free pages (center fold) + 1 free page (back)
+  // total = front(1) + content + free pages
+  // We add 3 free pages: 2 for center fold in middle, 1 for back
+  const contentSlots = target - 1 - 3; // subtract front + 3 free pages
+  if(contentSlots < 1) { alert('Need at least 5 pages for front + center fold + back'); return; }
+  const half = Math.ceil(contentSlots / 2);
+  const newSlots = [];
+  for(let i = 0; i < half; i++) newSlots.push({type:'section', count:2, split:'v'});
+  newSlots.push({type:'free', freeId:'fx1'});
+  newSlots.push({type:'free', freeId:'fx2'});
+  for(let i = half; i < contentSlots; i++) newSlots.push({type:'section', count:2, split:'v'});
+  newSlots.push({type:'free', freeId:'fx3'});
+  applySlots(newSlots);
+  input.value = '';
+}
+
+function renderPageManager() {
+  const mgr = document.getElementById('lp-body');
+  if(!mgr) return;
+  mgr.innerHTML = '';
+
+  // Count total pages
+  const totalPages = 1 + PAGE_SLOTS.length + 2 + 1; // front + slots + fold x2 + back
+  const countDisplay = document.getElementById('lp-count-display');
+  if(countDisplay) countDisplay.textContent = totalPages + ' pages total';
+
+  // Fixed: Front page (always P1)
+  let pageNum = 1;
+  mgr.appendChild(makeFixedRow('P1', 'FRONT PAGE', 'rgba(200,168,75,.8)'));
+  pageNum = 2;
+
+  let secIdx = 0;
+
+  PAGE_SLOTS.forEach((slot, pi) => {
+    const isSection = slot.type !== 'free';
+    const count = slot.count || 2;
+    const split = slot.split || 'v';
+
+    let chunk = [];
+    if(isSection) {
+      chunk = CONTENT_SECS.slice(secIdx, secIdx + count);
+      secIdx += count;
+    }
+
+    const row = document.createElement('div');
+    row.className = 'lp-row' + (isSection ? '' : ' lp-free');
+
+    // Page number
+    const pgNum = document.createElement('span');
+    pgNum.className = 'lp-pgnum';
+    pgNum.textContent = 'P' + pageNum;
+    pageNum++;
+
+    // Section labels
+    const secs = document.createElement('span');
+    secs.className = 'lp-secs' + (isSection ? '' : ' free');
+    secs.textContent = isSection ? (chunk.map(id => getSectionLabel(id)).join(' · ') || '—') : '✦ Free Page (no border)';
+
+    // Count selector
+    const sel = document.createElement('select');
+    sel.className = 'lp-sel';
+    if(isSection) {
+      [1,2,3,4].forEach(n => {
+        const opt = document.createElement('option');
+        opt.value = n;
+        opt.textContent = n + (n===1?' section':' sections');
+        if(n === count) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      sel.addEventListener('change', function() {
+        applySlots(PAGE_SLOTS.map((s,i) => i===pi ? {...s,count:parseInt(this.value)} : s));
+      });
+    } else {
+      sel.style.visibility = 'hidden';
+    }
+
+    // Split toggle
+    const splitBtn = document.createElement('button');
+    splitBtn.className = 'lp-btn' + (split==='h'?' active':'');
+    splitBtn.textContent = split==='h' ? '↕ Stacked' : '↔ Side by Side';
+    splitBtn.style.display = (!isSection || count < 2) ? 'none' : '';
+    splitBtn.addEventListener('click', function() {
+      applySlots(PAGE_SLOTS.map((s,i) => i===pi ? {...s,split:split==='h'?'v':'h'} : s));
+    });
+
+    // Up button
+    const upBtn = document.createElement('button');
+    upBtn.className = 'lp-btn';
+    upBtn.textContent = '↑';
+    upBtn.disabled = pi === 0;
+    upBtn.style.opacity = pi===0 ? '0.2' : '1';
+    upBtn.addEventListener('click', function() {
+      if(pi===0) return;
+      const s2 = PAGE_SLOTS.slice();
+      [s2[pi-1],s2[pi]] = [s2[pi],s2[pi-1]];
+      applySlots(s2);
+    });
+
+    // Down button
+    const dnBtn = document.createElement('button');
+    dnBtn.className = 'lp-btn';
+    dnBtn.textContent = '↓';
+    dnBtn.disabled = pi === PAGE_SLOTS.length-1;
+    dnBtn.style.opacity = pi===PAGE_SLOTS.length-1 ? '0.2' : '1';
+    dnBtn.addEventListener('click', function() {
+      if(pi===PAGE_SLOTS.length-1) return;
+      const s2 = PAGE_SLOTS.slice();
+      [s2[pi],s2[pi+1]] = [s2[pi+1],s2[pi]];
+      applySlots(s2);
+    });
+
+    // Delete button
+    const delBtn = document.createElement('button');
+    delBtn.className = 'lp-btn del';
+    delBtn.textContent = '✕ Remove';
+    delBtn.addEventListener('click', function() {
+      if(PAGE_SLOTS.length <= 1) return;
+      applySlots(PAGE_SLOTS.filter((_,i) => i!==pi));
+    });
+
+    row.appendChild(pgNum);
+    row.appendChild(secs);
+    row.appendChild(sel);
+    row.appendChild(splitBtn);
+    row.appendChild(upBtn);
+    row.appendChild(dnBtn);
+    row.appendChild(delBtn);
+    mgr.appendChild(row);
+  });
+
+}
+
+function addPageSlot() {
+  const s2 = PAGE_SLOTS.slice();
+  s2.push({type:'section',count:1,split:'v'});
+  applySlots(s2);
+}
+
+function addFreePageSlot() {
+  const fid = nextFreeId();
+  const s2 = PAGE_SLOTS.slice();
+  s2.push({type:'free',freeId:fid});
+  applySlots(s2);
+}
+
+function removePageSlot() {
+  if(PAGE_SLOTS.length <= 1) return;
+  applySlots(PAGE_SLOTS.slice(0,-1));
+}
+
+async function duplicateVolume(){
+  const toVol   = (document.getElementById('dup-vol')?.value  || '').trim();
+  const toIssue = (document.getElementById('dup-issue')?.value || '').trim();
+  if(!toVol || !toIssue){ alert('Enter a target volume and issue number.'); return; }
+  if(toVol === NW_VOLUME && toIssue === NW_ISSUE){ alert('Target must be different from current volume/issue.'); return; }
+  if(!confirm('Copy all content from Vol. ' + NW_VOLUME + ' Issue ' + NW_ISSUE + ' to Vol. ' + toVol + ' Issue ' + toIssue + '?\n\nThis will overwrite any existing content in the target.')) return;
+  // Save current first
+  await saveToSupabase();
+  // Copy D to target volume
+  const payload = { volume: toVol, issue: toIssue, content: D, settings: CFG };
+  try {
+    const res = await fetch('/api/save-newspaper', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': 'tonydanza' },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if(json.error) throw new Error(json.error);
+    showSaveStatus('✓ Duplicated to Vol. ' + toVol + ' Issue ' + toIssue);
+    alert('Done. Load Vol. ' + toVol + ' Issue ' + toIssue + ' from the Volume & Issue panel to edit it.');
+  } catch(e) {
+    alert('Error duplicating: ' + e.message);
+  }
+}
+
+
+async function downloadPDF(){
+  const btn = document.getElementById('pdf-btn');
+  btn.textContent = '⏳ Generating…';
+  btn.disabled = true;
+
+  // Hide UI chrome
+  document.querySelector('.bar').style.display = 'none';
+  document.getElementById('prog-bar').style.display = 'none';
+  document.getElementById('ep').classList.remove('open');
+  document.getElementById('sp').classList.remove('open');
+
+  try {
+    const { jsPDF } = window.jspdf;
+    // Letter size in points: 612 x 792
+    const pdf = new jsPDF({ orientation:'portrait', unit:'pt', format:'letter' });
+    const pages = document.querySelectorAll('.page-1, .page-n');
+
+    for(let i=0; i<pages.length; i++){
+      btn.textContent = `⏳ Page ${i+1} of ${pages.length}…`;
+      if(i>0) pdf.addPage('letter','portrait');
+
+      const canvas = await html2canvas(pages[i], {
+        scale: 3,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+      pdf.addImage(imgData, 'JPEG', 0, 0, 612, 792, '', 'FAST');
+    }
+
+    pdf.save('Snowmentum_Vol1.pdf');
+  } catch(e) {
+    alert('PDF generation failed: ' + e.message);
+  } finally {
+    document.querySelector('.bar').style.display = '';
+    document.getElementById('prog-bar').style.display = '';
+    btn.textContent = '⬇ High-Res PDF';
+    btn.disabled = false;
+  }
+}
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.zone')&&!e.target.closest('.ep')&&!e.target.closest('.bar')&&!e.target.closest('.sp')) closeEP();
+  if(!e.target.closest('.sp')&&!e.target.closest('.bar')) document.getElementById('sp').classList.remove('open');
+});
+
+// Init layouts from saved PAGE_SLOTS
+const initLayouts = buildLayoutsFromSlots(PAGE_SLOTS);
+LAYOUTS.length = 0;
+initLayouts.forEach(l => LAYOUTS.push(l));
+buildPages();
+loadFromSupabase().then(() => { renderAll(); });
+fetchWeather();
+setInterval(function(){ if(document.getElementById('tourboard-rc')) renderTourboard(); }, 60000);
+renderPageManager();
+updateProgBar();
+</script>
+
+</body>
+</html>

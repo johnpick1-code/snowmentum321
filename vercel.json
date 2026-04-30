@@ -1,6 +1,18 @@
 {
   "version": 2,
   "rewrites": [
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "snowmentum.live" }],
+      "destination": "/newspaper.html"
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "www.snowmentum.live" }],
+      "destination": "/newspaper.html"
+    },
+    { "source": "/newspaper", "destination": "/newspaper.html" },
+    { "source": "/volumes", "destination": "/volumes.html" },
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/events", "destination": "/events.html" },
     { "source": "/join/:keyword", "destination": "/join.html" },
